@@ -3,195 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Coaching - Testbook Style Mock Test Portal</title>
+    <title>Smart Coaching - Testbook Style Dashboard</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-        body { background-color: #f3f4f6; color: #1f2937; padding-bottom: 50px; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; height: 100vh; overflow-x: hidden; }
 
-        /* Testbook Navigation Bar */
-        .navbar { background-color: #0b132b; color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .logo { font-size: 22px; font-weight: 800; color: #00b4d8; letter-spacing: 0.5px; }
-        .logo span { color: #ffffff; }
-        .nav-contact { font-size: 14px; background: #1c2541; padding: 6px 12px; border-radius: 20px; border: 1px solid #3a506b; }
-        .nav-contact a { color: #5bc0be; text-decoration: none; font-weight: bold; }
+        /* Top Navbar */
+        .top-navbar { background: #000; color: #fff; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: fixed; top: 0; width: 100%; z-index: 100; }
+        .logo { font-size: 20px; font-weight: 800; color: #00b4d8; display: flex; align-items: center; gap: 8px; }
+        .logo span { color: #fff; }
+        .search-bar { background: #1a1a1a; border: 1px solid #333; border-radius: 4px; padding: 6px 12px; width: 300px; color: #fff; font-size: 13px; }
+        .user-section { display: flex; align-items: center; gap: 15px; }
+        .btn-login { background: #00b4d8; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 13px; }
 
-        /* Hero Banner */
-        .hero { background: linear-gradient(135deg, #1c2541, #0b132b); color: white; text-align: center; padding: 30px 15px; border-bottom: 3px solid #00b4d8; }
-        .hero h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; color: #ffffff; }
-        .hero p { font-size: 14px; color: #95a5a6; max-width: 600px; margin: 0 auto; }
+        /* Main Layout */
+        .layout { display: flex; margin-top: 60px; min-height: calc(100vh - 60px); }
 
-        /* Category Badges */
-        .exam-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 15px; }
-        .badge { background: #3a506b; color: #ffffff; font-size: 12px; padding: 4px 10px; border-radius: 4px; font-weight: 600; }
+        /* Left Sidebar (Testbook Style) */
+        .sidebar { width: 220px; background: #0b132b; color: #8d99ae; display: flex; flex-direction: column; position: fixed; top: 60px; bottom: 0; padding-top: 10px; overflow-y: auto; }
+        .sidebar-section { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #4a5568; padding: 12px 20px 4px; font-weight: 700; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 20px; font-size: 13px; color: #a0aec0; cursor: pointer; text-decoration: none; transition: 0.2s; }
+        .menu-item:hover, .menu-item.active { background: #1c2541; color: #00b4d8; border-left: 3px solid #00b4d8; }
+        .badge-new { background: #e53e3e; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 3px; font-weight: bold; }
 
-        /* Main Container */
-        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+        /* Main Content Area */
+        .content { margin-left: 220px; padding: 25px; width: calc(100% - 220px); }
+        .page-title { font-size: 20px; font-weight: 700; color: #1a202c; margin-bottom: 20px; }
 
-        /* Testbook Test Card */
-        .card { background: #ffffff; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f3f4f6; padding-bottom: 12px; margin-bottom: 15px; }
-        .card-title { font-size: 18px; font-weight: 700; color: #0b132b; }
-        .live-tag { background: #ef4444; color: white; font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: bold; text-transform: uppercase; animation: blink 1.5s infinite; }
+        /* Cards Grid */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .test-card { background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; }
+        .card-tag { font-size: 11px; color: #718096; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .card-title { font-size: 15px; font-weight: 700; color: #2d3748; margin-bottom: 15px; line-height: 1.3; }
+        .btn-card { background: #00b4d8; color: #fff; border: none; padding: 8px; border-radius: 4px; font-weight: 600; cursor: pointer; text-align: center; font-size: 13px; width: 100%; }
 
-        /* Test Meta Info */
-        .test-info { display: flex; gap: 20px; font-size: 13px; color: #6b7280; margin-bottom: 15px; }
-        .test-info div { display: flex; align-items: center; gap: 5px; }
-
-        /* Question & Options */
-        .question { font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 15px; line-height: 1.5; }
-        .options { list-style: none; padding: 0; }
-        .options li { background: #ffffff; border: 1px solid #d1d5db; margin-bottom: 10px; padding: 12px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
-        .options li:hover { background: #f9fafb; border-color: #00b4d8; }
-        .options li.selected { background: #e0f2fe; color: #0369a1; border-color: #0284c7; font-weight: 600; }
-
-        /* Action Buttons */
-        .btn-action { width: 100%; background: #00b4d8; color: #ffffff; border: none; padding: 12px; font-size: 15px; border-radius: 6px; cursor: pointer; font-weight: 700; transition: background 0.2s; }
-        .btn-action:hover { background: #0096c7; }
-
-        /* Score Display */
-        #result-container { text-align: center; padding: 20px; }
-        .score-circle { width: 100px; height: 100px; border-radius: 50%; background: #e0f2fe; color: #0284c7; font-size: 24px; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 15px auto; border: 4px solid #0284c7; }
-
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        /* Modal / Section Screens */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
 <body>
 
-    <!-- Testbook Header -->
-    <div class="navbar">
+    <!-- Top Navbar -->
+    <div class="top-navbar">
         <div class="logo">SMART<span>COACHING</span></div>
-        <div class="nav-contact">Helpline: <a href="tel:8972084371">8972084371</a></div>
-    </div>
-
-    <!-- Hero Info Banner -->
-    <div class="hero">
-        <h1>WB PSC, Police, SSC & Railway Mock Test Portal</h1>
-        <p>Math, Reasoning & General Knowledge Online Test Series</p>
-        <div class="exam-badges">
-            <span class="badge">WBPSC</span>
-            <span class="badge">WBP Constable/SI</span>
-            <span class="badge">Excise</span>
-            <span class="badge">SSC</span>
-            <span class="badge">Railways</span>
+        <input type="text" class="search-bar" placeholder="Search for your Exam...">
+        <div class="user-section">
+            <button class="btn-login" onclick="alert('Student Login Panel Coming Soon!')">Log In</button>
         </div>
     </div>
 
-    <div class="container">
-        
-        <!-- Main Quiz Card -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">📝 Daily Live Mock Test</div>
-                <div class="live-tag">LIVE TEST</div>
-            </div>
-
-            <div class="test-info">
-                <div>⏱️ সময়: মুক্ত</div>
-                <div>📊 নেগেটিভ মার্কিং: ০.২৫</div>
-                <div>🎯 বিষয়: Math / GI / GK</div>
-            </div>
-
-            <!-- Question Screen -->
-            <div id="quiz-container">
-                <div class="question" id="question-text">প্রশ্ন লোড হচ্ছে...</div>
-                <ul class="options" id="options-list"></ul>
-                <button class="btn-action" id="next-btn" onclick="nextQuestion()">পরবর্তী প্রশ্ন ➔</button>
-            </div>
-
-            <!-- Result Screen -->
-            <div id="result-container" style="display: none;">
-                <h3 style="color:#0b132b;">পরীক্ষা সম্পন্ন হয়েছে!</h3>
-                <div class="score-circle" id="score-text">0/0</div>
-                <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">রেজাল্টের একটি স্ক্রিনশট নিয়ে আপনার নামসহ স্যারকে পাঠিয়ে দিন।</p>
-                <button class="btn-action" onclick="location.reload()">পুনরায় পরীক্ষা দিন</button>
-            </div>
+    <div class="layout">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <a class="menu-item active" onclick="switchTab('tests')">🏠 Home</a>
+            
+            <div class="sidebar-section">TESTS</div>
+            <a class="menu-item" onclick="switchTab('tests')">📝 Test Series</a>
+            <a class="menu-item" onclick="switchTab('tests')">⚡ Live Tests & Quizzes</a>
+            <a class="menu-item" onclick="switchTab('tests')">📄 Previous Year Papers</a>
+            
+            <div class="sidebar-section">STUDY MATERIAL</div>
+            <a class="menu-item" onclick="switchTab('notes')">📚 Study Notes <span class="badge-new">NEW</span></a>
+            <a class="menu-item" onclick="switchTab('tests')">🎯 Practice</a>
+            <a class="menu-item" onclick="switchTab('notes')">📄 PDF Downloads</a>
         </div>
 
-        <!-- Contact Box -->
-        <div class="card" style="text-align: center; background: #0b132b; color: white;">
-            <h4 style="color: #00b4d8; margin-bottom: 5px;">স্মার্ট কোচিংয়ে নতুন ব্যাচে ভর্তি চলছে</h4>
-            <p style="font-size: 13px; color: #9ca3af; margin-bottom: 10px;">কল করুন: 8972084371 / 9635992043</p>
-        </div>
+        <!-- Main Content -->
+        <div class="content">
+            
+            <!-- Test Series Tab -->
+            <div id="tab-tests" class="tab-content active">
+                <div class="page-title">Your Recent Test Series</div>
+                <div class="cards-grid">
+                    
+                    <div class="test-card">
+                        <div>
+                            <div class="card-tag"><span>WBPSC</span> <span>118.4k Students</span></div>
+                            <div class="card-title">WBPSC Food SI & Clerkship Mock Test 2026</div>
+                        </div>
+                        <button class="btn-card" onclick="startMockTest()">Go To Test Series</button>
+                    </div>
 
+                    <div class="test-card">
+                        <div>
+                            <div class="card-tag"><span>WBP</span> <span>88.5k Students</span></div>
+                            <div class="card-title">WBP Constable & SI Special Mock Test</div>
+                        </div>
+                        <button class="btn-card" onclick="startMockTest()">Go To Test Series</button>
+                    </div>
+
+                    <div class="test-card">
+                        <div>
+                            <div class="card-tag"><span>GENERAL SCIENCE</span> <span>150k Students</span></div>
+                            <div class="card-title">Math & Reasoning Booster Series</div>
+                        </div>
+                        <button class="btn-card" onclick="startMockTest()">Go To Test Series</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Notes Section Tab -->
+            <div id="tab-notes" class="tab-content">
+                <div class="page-title">Study Notes & PDF Downloads</div>
+                <div class="cards-grid">
+                    <div class="test-card">
+                        <div class="card-title">📄 Math Short Tricks PDF</div>
+                        <button class="btn-card" style="background:#22c55e;" onclick="alert('Downloading PDF...')">Download PDF</button>
+                    </div>
+                    <div class="test-card">
+                        <div class="card-title">📄 General Knowledge Notes (Bengali)</div>
+                        <button class="btn-card" style="background:#22c55e;" onclick="alert('Downloading PDF...')">Download PDF</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
 <script>
-    // প্রশ্নাবলী আপডেট করার জায়গা
-    const quizData = [
-        {
-            question: "১. (GK) পশ্চিমবঙ্গের রাজ্য পশুর নাম কী?",
-            options: ["মেছো বিড়াল", "হাতি", "বাঘ", "রয়েল বেঙ্গল টাইগার"],
-            correct: 0
-        },
-        {
-            question: "২. (Math) একটি জামা ৫০০ টাকায় কিনে ১০% লাভে বিক্রি করলে বিক্রয়মূল্য কত হবে?",
-            options: ["৫৫০ টাকা", "৫২৫ টাকা", "৬০০ টাকা", "৪৫০ টাকা"],
-            correct: 0
-        },
-        {
-            question: "৩. (GI) যদি A = 1 এবং CAT = 24 হয়, তবে BAT = কত?",
-            options: ["23", "20", "22", "25"],
-            correct: 0
-        }
-    ];
-
-    let currentQuestionIndex = 0;
-    let score = 0;
-    let selectedOption = null;
-
-    function loadQuestion() {
-        selectedOption = null;
-        const currentQuiz = quizData[currentQuestionIndex];
-        document.getElementById("question-text").innerText = currentQuiz.question;
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
         
-        const optionsList = document.getElementById("options-list");
-        optionsList.innerHTML = "";
-
-        currentQuiz.options.forEach((option, index) => {
-            const li = document.createElement("li");
-            li.innerText = option;
-            li.onclick = () => selectOption(li, index);
-            optionsList.appendChild(li);
-        });
-
-        if (currentQuestionIndex === quizData.length - 1) {
-            document.getElementById("next-btn").innerText = "পরীক্ষা সাবমিট করুন";
-        }
+        document.getElementById('tab-' + tabName).classList.add('active');
+        event.currentTarget.classList.add('active');
     }
 
-    function selectOption(element, index) {
-        const allOptions = document.querySelectorAll(".options li");
-        allOptions.forEach(opt => opt.classList.remove("selected"));
-        element.classList.add("selected");
-        selectedOption = index;
+    function startMockTest() {
+        alert("মক টেস্ট শুরু হচ্ছে! (এখানে প্রশ্ন আসবে)");
     }
-
-    function nextQuestion() {
-        if (selectedOption === null) {
-            alert("অনুগ্রহ করে একটি উত্তর নির্বাচন করুন!");
-            return;
-        }
-
-        if (selectedOption === quizData[currentQuestionIndex].correct) {
-            score++;
-        }
-
-        currentQuestionIndex++;
-
-        if (currentQuestionIndex < quizData.length) {
-            loadQuestion();
-        } else {
-            showResult();
-        }
-    }
-
-    function showResult() {
-        document.getElementById("quiz-container").style.display = "none";
-        document.getElementById("result-container").style.display = "block";
-        document.getElementById("score-text").innerText = `${score} / ${quizData.length}`;
-    }
-
-    loadQuestion();
 </script>
 
 </body>
