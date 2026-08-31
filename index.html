@@ -3,61 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Coaching - Online Mock Test</title>
+    <title>Smart Coaching - Online Mock Test Portal</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 650px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; }
-        .question { font-size: 18px; font-weight: 600; color: #34495e; margin-bottom: 15px; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f1f5f9; color: #334155; padding-bottom: 40px; }
+        
+        /* Header & Hero Section */
+        .header { background: linear-gradient(135deg, #1e3a8a, #0f172a); color: #ffffff; text-align: center; padding: 35px 20px 25px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .header h1 { font-size: 32px; font-weight: 700; color: #fbbf24; letter-spacing: 1px; margin-bottom: 8px; }
+        .header p { font-size: 16px; color: #e2e8f0; }
+        
+        /* Main Container */
+        .container { max-width: 750px; margin: -20px auto 0 auto; padding: 0 15px; }
+        .card { background: #ffffff; border-radius: 12px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        
+        /* Info Grid (Courses & Features) */
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 15px 0; }
+        .info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; padding: 12px 15px; border-radius: 6px; }
+        .info-box h4 { color: #1e3a8a; margin-bottom: 5px; font-size: 15px; }
+        .info-box p { font-size: 13px; color: #64748b; line-height: 1.4; }
+
+        /* Banner & Notice */
+        .notice-banner { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 12px 15px; border-radius: 8px; font-size: 14px; text-align: center; margin-bottom: 20px; }
+
+        /* Quiz UI */
+        .quiz-header { border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
+        .quiz-title { font-size: 20px; font-weight: 600; color: #1e293b; }
+        .question { font-size: 17px; font-weight: 600; color: #1e3a8a; margin-bottom: 18px; line-height: 1.5; }
         .options { list-style: none; padding: 0; }
-        .options li { background: #f8f9fa; border: 1px solid #ddd; margin-bottom: 10px; padding: 12px 15px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
-        .options li:hover { background: #eef2f5; }
-        .options li.selected { background: #3498db; color: white; border-color: #3498db; }
-        button { width: 100%; background: #2ecc71; color: white; border: none; padding: 12px; font-size: 16px; border-radius: 6px; cursor: pointer; margin-top: 15px; font-weight: bold; }
-        button:hover { background: #27ae60; }
-        #result-container { text-align: center; }
-        .score-box { font-size: 24px; font-weight: bold; color: #2c3e50; margin-top: 15px; }
+        .options li { background: #f8fafc; border: 1.5px solid #cbd5e1; margin-bottom: 12px; padding: 14px 18px; border-radius: 8px; cursor: pointer; font-size: 15px; transition: all 0.2s ease; }
+        .options li:hover { background: #eff6ff; border-color: #3b82f6; }
+        .options li.selected { background: #dbeafe; color: #1e40af; border-color: #2563eb; font-weight: 600; }
+        
+        /* Buttons */
+        .btn { width: 100%; background: #2563eb; color: #ffffff; border: none; padding: 14px; font-size: 16px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 10px; transition: background 0.2s; }
+        .btn:hover { background: #1d4ed8; }
+        
+        /* Results */
+        #result-container { text-align: center; padding: 20px 10px; }
+        .score-box { font-size: 26px; font-weight: bold; color: #166534; margin: 15px 0; }
+
+        /* Contact & Footer */
+        .contact-card { background: #1e293b; color: #ffffff; text-align: center; }
+        .contact-card h3 { color: #fbbf24; margin-bottom: 10px; }
+        .phone-numbers { font-size: 18px; font-weight: bold; letter-spacing: 0.5px; margin-top: 8px; }
+        .phone-numbers a { color: #60a5fa; text-decoration: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Smart Coaching</h1>
-    <p class="subtitle">Online Mock Test Portal</p>
-    <hr style="border:0; border-top:1px solid #eee; margin-bottom:20px;">
-
-    <div id="quiz-container">
-        <div class="question" id="question-text">প্রশ্ন লোড হচ্ছে...</div>
-        <ul class="options" id="options-list"></ul>
-        <button id="next-btn" onclick="nextQuestion()">পরবর্তী প্রশ্ন</button>
+    <!-- Header Section -->
+    <div class="header">
+        <h1>SMART COACHING</h1>
+        <p>Government Exam Preparation Center</p>
     </div>
 
-    <div id="result-container" style="display: none;">
-        <h2>মক টেস্ট সম্পন্ন হয়েছে!</h2>
-        <div class="score-box" id="score-text"></div>
-        <button onclick="location.reload()">পুনরায় টেস্ট দিন</button>
+    <div class="container">
+        
+        <!-- Coaching Details Box -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="info-grid">
+                <div class="info-box">
+                    <h4>🎯 টার্গেট পরীক্ষা</h4>
+                    <p>WBPSC, WB Police (Constable & SI), Excise, Railway, SSC</p>
+                </div>
+                <div class="info-box">
+                    <h4>📚 স্পেশাল ক্লাস</h4>
+                    <p>Maths (গণিত), Reasoning (জিআই) এবং General Knowledge (GK)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions Banner -->
+        <div class="notice-banner">
+            📌 <strong>নির্দেশাবলী:</strong> প্রশ্নের উত্তর নির্বাচন করে "পরবর্তী প্রশ্ন" বোতামে ক্লিক করুন। পরীক্ষা শেষে প্রাপ্ত নম্বর দেখতে পাবেন।
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="card">
+            <div id="quiz-container">
+                <div class="quiz-header">
+                    <div class="quiz-title">📝 Daily Online Practice Test</div>
+                </div>
+                <div class="question" id="question-text">প্রশ্ন লোড হচ্ছে...</div>
+                <ul class="options" id="options-list"></ul>
+                <button class="btn" id="next-btn" onclick="nextQuestion()">পরবর্তী প্রশ্ন</button>
+            </div>
+
+            <!-- Result Box -->
+            <div id="result-container" style="display: none;">
+                <h2>অভিনন্দন! পরীক্ষা সম্পন্ন হয়েছে।</h2>
+                <div class="score-box" id="score-text"></div>
+                <p style="color:#64748b; font-size:14px; margin-bottom:15px;">আপনার স্কোর-এর একটি স্ক্রিনশট তুলে কোচিংয়ের স্যারের কাছে পাঠান।</p>
+                <button class="btn" onclick="location.reload()">পুনরায় পরীক্ষা দিন</button>
+            </div>
+        </div>
+
+        <!-- Contact Box -->
+        <div class="card contact-card">
+            <h3>📞 ভর্তির জন্য যোগাযোগ করুন</h3>
+            <p style="font-size: 14px; color: #94a3b8;">স্মার্ট কোচিংয়ে নতুন ব্যাচে ভর্তি চলছে</p>
+            <div class="phone-numbers">
+                📱 <a href="tel:8972084371">8972084371</a> / <a href="tel:9635992043">9635992043</a>
+            </div>
+        </div>
+
     </div>
-</div>
 
 <script>
-    // আপনার প্রশ্নগুলো এখানে সাজিয়ে রাখুন
+    // আপনার কোচিংয়ের প্রশ্নাবলি
     const quizData = [
         {
-            question: "১. ভারতের বৃহত্তম নদীর নাম কী?",
-            options: ["গঙ্গা", "যমুনা", "গো দাবরী", "সিন্ধু"],
+            question: "১. (Math) দুটি সংখ্যার অনুপাত ৩:৪ এবং তাদের লসাগু ১৮০ হলে, ছোট সংখ্যাটি কত?",
+            options: ["৪৫", "৬০", "১৫", "৩০"],
             correct: 0
         },
         {
-            question: "২. ভারতের ব্ল্যাক সয়েল (Black Soil) প্রধানত কোন শিলা থেকে তৈরি হয়?",
-            options: ["গ্রানাইট", "ব্যাসাল্ট", "বেলেপাথর", "মার্বেল"],
-            correct: 1
+            question: "২. (GK) পশ্চিমবঙ্গ পুলিশ দিবস কবে পালিত হয়?",
+            options: ["১লা সেপ্টেম্বর", "১৫ই আগস্ট", "২৬শে জানুয়ারি", "১০ই অক্টোবর"],
+            correct: 0
         },
         {
-            question: "৩. সিরিজের শূন্যস্থান পূরণ করুন: 2, 4, 8, 16, ?",
-            options: ["20", "24", "32", "64"],
-            correct: 2
+            question: "৩. (GI) যদি CAT = 24 এবং DOG = 26 হয়, তবে PIG = কত?",
+            options: ["32", "38", "36", "40"],
+            correct: 1
         }
     ];
 
@@ -81,7 +150,7 @@
         });
 
         if (currentQuestionIndex === quizData.length - 1) {
-            document.getElementById("next-btn").innerText = "সাবমিট করুন";
+            document.getElementById("next-btn").innerText = "পরীক্ষা সাবমিট করুন";
         }
     }
 
@@ -94,11 +163,11 @@
 
     function nextQuestion() {
         if (selectedOption === null) {
-            alert("অনুগ্রহ করে একটি উত্তর নির্বাচন করুন!");
+            alert("অনুগ্রহ করে যেকোনো একটি উত্তর নির্বাচন করুন!");
             return;
         }
 
-        if (selectedOption === quizData[currentQuestionIndex].correct) {
+        if (selectedOption === quizData[quizData.length ? currentQuestionIndex : 0].correct) {
             score++;
         }
 
@@ -114,10 +183,9 @@
     function showResult() {
         document.getElementById("quiz-container").style.display = "none";
         document.getElementById("result-container").style.display = "block";
-        document.getElementById("score-text").innerText = `আপনার প্রাপ্ত নম্বর: ${score} / ${quizData.length}`;
+        document.getElementById("score-text").innerText = `প্রাপ্ত নম্বর: ${score} / ${quizData.length}`;
     }
 
-    // প্রথম প্রশ্ন লোড করুন
     loadQuestion();
 </script>
 
