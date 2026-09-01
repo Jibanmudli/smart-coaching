@@ -31,11 +31,12 @@
         .page-title { font-size: 20px; font-weight: 700; color: #1a202c; margin-bottom: 20px; }
 
         /* Cards Grid */
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .test-card { background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; }
         .card-tag { font-size: 11px; color: #718096; margin-bottom: 8px; display: flex; justify-content: space-between; }
         .card-title { font-size: 15px; font-weight: 700; color: #2d3748; margin-bottom: 15px; line-height: 1.3; }
-        .btn-card { background: #00b4d8; color: #fff; border: none; padding: 8px; border-radius: 4px; font-weight: 600; cursor: pointer; text-align: center; font-size: 13px; width: 100%; }
+        .btn-card { background: #00b4d8; color: #fff; border: none; padding: 10px; border-radius: 4px; font-weight: 600; cursor: pointer; text-align: center; font-size: 13px; width: 100%; transition: 0.2s; }
+        .btn-card:hover { background: #0096c7; }
 
         /* Modal Screens */
         .tab-content { display: none; }
@@ -72,15 +73,14 @@
         <div class="sidebar">
             <a class="menu-item active" onclick="switchTab('tests')">🏠 Home</a>
             
-            <div class="sidebar-section">TESTS</div>
-            <!-- test-series.html ফাইলের সরাসরি লিংক এখানে বসানো হয়েছে -->
-            <a class="menu-item" href="test-series.html">📝 Test Series</a>
-            <a class="menu-item" onclick="startMockTest()">⚡ Live Tests & Quizzes</a>
-            <a class="menu-item" onclick="switchTab('tests')">📄 Previous Year Papers</a>
+            <div class="sidebar-section">TEST SERIES</div>
+            <a class="menu-item" onclick="switchTab('tests')">📝 All Mock Tests</a>
+            <a class="menu-item" onclick="startMockTest('gk')">🌍 GK Special Test</a>
+            <a class="menu-item" onclick="startMockTest('math')">🔢 Math Booster Test</a>
+            <a class="menu-item" onclick="startMockTest('gi')">🧩 GI & Reasoning Test</a>
             
             <div class="sidebar-section">STUDY MATERIAL</div>
             <a class="menu-item" onclick="switchTab('notes')">📚 Study Notes <span class="badge-new">NEW</span></a>
-            <a class="menu-item" onclick="switchTab('tests')">🎯 Practice</a>
             <a class="menu-item" onclick="switchTab('notes')">📄 PDF Downloads</a>
         </div>
 
@@ -89,31 +89,34 @@
             
             <!-- Test Series Tab -->
             <div id="tab-tests" class="tab-content active">
-                <div class="page-title">Your Recent Test Series</div>
+                <div class="page-title">Subject-Wise Mock Test Series</div>
                 <div class="cards-grid">
                     
+                    <!-- General Knowledge Card -->
                     <div class="test-card">
                         <div>
-                            <div class="card-tag"><span>WBPSC</span> <span>118.4k Students</span></div>
-                            <div class="card-title">WBPSC Food SI & Clerkship Mock Test 2026</div>
+                            <div class="card-tag"><span>GENERAL KNOWLEDGE</span> <span>50 Questions</span></div>
+                            <div class="card-title">General Knowledge & Current Affairs Special Test</div>
                         </div>
-                        <button class="btn-card" onclick="startMockTest()">Go To Test Series</button>
+                        <button class="btn-card" onclick="startMockTest('gk')">Start GK Test</button>
                     </div>
 
+                    <!-- Mathematics Card -->
                     <div class="test-card">
                         <div>
-                            <div class="card-tag"><span>WBP</span> <span>88.5k Students</span></div>
-                            <div class="card-title">WBP Constable & SI Special Mock Test</div>
+                            <div class="card-tag"><span>MATHEMATICS</span> <span>25 Questions</span></div>
+                            <div class="card-title">Math & Numerical Ability Practice Test</div>
                         </div>
-                        <button class="btn-card" onclick="startMockTest()">Go To Test Series</button>
+                        <button class="btn-card" style="background:#0e9f6e;" onclick="startMockTest('math')">Start Math Test</button>
                     </div>
 
+                    <!-- General Intelligence / Reasoning Card -->
                     <div class="test-card">
                         <div>
-                            <div class="card-tag"><span>GENERAL SCIENCE</span> <span>150k Students</span></div>
-                            <div class="card-title">Math & Reasoning Booster Series</div>
+                            <div class="card-tag"><span>REASONING</span> <span>25 Questions</span></div>
+                            <div class="card-title">General Intelligence & Logical Reasoning Test</div>
                         </div>
-                        <button class="btn-card" onclick="startMockTest()">Go To Test Series</button>
+                        <button class="btn-card" style="background:#8b5cf6;" onclick="startMockTest('gi')">Start Reasoning Test</button>
                     </div>
 
                 </div>
@@ -141,7 +144,7 @@
     <div id="quizModal" class="quiz-modal">
         <div class="quiz-modal-content">
             <div class="quiz-header">
-                <h3>Smart Coaching Mock Test</h3>
+                <h3 id="modalTitle">Smart Coaching Mock Test</h3>
                 <button class="quiz-btn btn-close" onclick="closeMockTest()">বন্ধ করুন</button>
             </div>
             <div id="quizBody">
@@ -155,7 +158,7 @@
             <div id="resultBody" style="display:none; text-align:center; padding: 20px;">
                 <h2 style="color: #22c55e;">পরীক্ষা সম্পূর্ণ হয়েছে!</h2>
                 <p id="finalScore" style="font-size: 20px; font-weight: bold; margin: 15px 0;"></p>
-                <button class="quiz-btn btn-next" onclick="startMockTest()">আবার চেষ্টা করুন</button>
+                <button class="quiz-btn btn-next" onclick="closeMockTest()">ড্যাশবোর্ডে ফিরে যান</button>
             </div>
         </div>
     </div>
@@ -171,8 +174,8 @@
             }
         }
 
-        // আপনার ১০০টি প্রশ্ন দিয়ে তৈরি কুইজ ডাটা
-        const quizData = [
+        // বিষয়ভিত্তিক আলাদা আলাদা প্রশ্নের তালিকা
+        const questionsGK = [
             { question: "১. ভারতের জাতীয় নদী কোনটি?", options: ["যমুনা", "গঙ্গা", "গো দাবরী", "সিন্ধু"], correct: 1 },
             { question: "২. পশ্চিমবঙ্গের রাজ্য পশুর নাম কী?", options: ["মেছো বিড়াল", "হাতি", "রয়েল বেঙ্গল টাইগার", "সিংহ"], correct: 0 },
             { question: "৩. 'ভারতের সিলিকন ভ্যালি' কাকে বলা হয়?", options: ["মুম্বাই", "কলকাতা", "বেঙ্গালুরু", "হায়দ্রাবাদ"], correct: 2 },
@@ -192,96 +195,45 @@
             { question: "১৭. ভারতের কেন্দ্রীয় ধান গবেষণা কেন্দ্র কোথায় অবস্থিত?", options: ["কটক", "ব্যারাকপুর", "পুনে", "হায়দ্রাবাদ"], correct: 0 },
             { question: "১৮. সত্যশোধক সমাজ কে প্রতিষ্ঠা করেন?", options: ["জ্যোতিরাও ফুলে", "বি. আর. আম্বেদকর", "কেশবচন্দ্র সেন", "দেবেন্দ্রনাথ ঠাকুর"], correct: 0 },
             { question: "১৯. ভিটামিন C-এর রাসায়নিক নাম কী?", options: ["রেটিনল", "অ্যাসকরবিক অ্যাসিড", "থায়ামিন", "ক্যালসিফেরল"], correct: 1 },
-            { question: "২০. জাপানের মুদ্রার নাম কী?", options: ["ইউয়ান", "ইয়েন", "উন", "রুপিয়া"], correct: 1 },
-            { question: "২১. ভারতের প্রথম মহিলা প্রধানমন্ত্রী কে ছিলেন?", options: ["সরোজিনী নাইডু", "ইন্দিরা গান্ধী", "প্রতিভা পাতিল", "সুচেতা কৃপালিনী"], correct: 1 },
-            { question: "২২. নোবেল পুরস্কার দেওয়া শুরু হয় কোন সাল থেকে?", options: ["১৯০১", "১৯০৫", "১৯১১", "১৯১৫"], correct: 0 },
-            { question: "২৩. বিশ্ব রেড ক্রস দিবস কবে পালিত হয়?", options: ["৮ই মে", "১০ই জুন", "১৫ই মে", "১লা মে"], correct: 0 },
-            { question: "২৪. কোন ভিটামিনের অভাবে রিকেট রোগ হয়?", options: ["ভিটামিন A", "ভিটামিন B", "ভিটামিন C", "ভিটামিন D"], correct: 3 },
-            { question: "২৫. ভারতের সর্বোচ্চ বেসামরিক সম্মান কোনটি?", options: ["পদ্মবিভূষণ", "ভারত রত্ন", "পদ্মভূষণ", "পরমবীর চক্র"], correct: 1 },
-            { question: "২৬. 'গীতিগোবিন্দ' কাব্যের রচিয়তা কে?", options: ["জয়দেব", "কালিদাস", "ভবভূতি", "বাণভট্ট"], correct: 0 },
-            { question: "২৭. কোন নদীকে 'দক্ষিণ ভারতের গঙ্গা' বলা হয়?", options: ["কৃষ্ণা", "কাবেরী", "গো দাবরী", "নর্মদা"], correct: 2 },
-            { question: "২৮. প্রথম বিশ্বযুদ্ধ কবে শুরু হয়েছিল?", options: ["১৯১৪", "১৯৩৯", "১৯১২", "১৯১৮"], correct: 0 },
-            { question: "২৯. পেন্সিল তৈরিতে নিচের কোনটি ব্যবহৃত হয়?", options: ["চারকোল", "গ্রাফাইট", "সিলিকন", "ফসফরাস"], correct: 1 },
-            { question: "৩০. কত সালে মহাত্মা গান্ধী ভারতে ফিরে আসেন?", options: ["১৯১৫", "১৯১৭", "১৯১৯", "১৯২১"], correct: 0 },
-            { question: "৩১. এশিয়াটিক সোসাইটি কে প্রতিষ্ঠা করেন?", options: ["উইলিয়াম জোন্স", "লর্ড কার্জন", "ওয়ারেন হেস্টিংস", "মেকলে"], correct: 0 },
-            { question: "৩২. 'বুল ফাইটিং' কোন দেশের জাতীয় খেলা?", options: ["স্পেন", "কানাডা", "মেক্সিকো", "স্কটল্যান্ড"], correct: 0 },
-            { question: "৩৩. ভারতের সংবিধানের অভিভাবক কাকে বলা হয়?", options: ["সংসদ", "রাষ্ট্রপতি", "সুপ্রিম কোর্ট", "প্রধানমন্ত্রী"], correct: 2 },
-            { question: "৩৪. আন্তর্জাতিক ন্যায়ালয় (ICJ)-এর সদর দপ্তর কোথায়?", options: ["জেনেভা", "নিউ ইয়র্ক", "হেগ", "প্যারিস"], correct: 2 },
-            { question: "৩৫. 'ইঙ্কলাব জিন্দাবাদ' স্লোগানটি প্রথম কে দিয়েছিলেন?", options: ["ভগত সিং", "সুভাষচন্দ্র বসু", "চন্দ্রশেখর আজাদ", "হসরাত মোহানি"], correct: 3 },
-            { question: "৩৬. ভারতের প্রথম আইএএস (IAS) অফিসার কে ছিলেন?", options: ["সত্যেন্দ্রনাথ ঠাকুর", "রবীন্দ্রনাথ ঠাকুর", "সুভাষচন্দ্র বসু", "উমেশচন্দ্র বন্দ্যোপাধ্যায়"], correct: 0 },
-            { question: "৩৭. কাজিরাঙ্গা জাতীয় উদ্যান কিসের জন্য বিখ্যাত?", options: ["একশৃঙ্গ গণ্ডার", "বাঘ", "হাতি", "হরিণ"], correct: 0 },
-            { question: "৩৮. কম্পিউটার বিজ্ঞান অনুসারে RAM-এর পুরো নাম কী?", options: ["Random Access Memory", "Read Access Memory", "Rapid Access Memory", "Real Access Memory"], correct: 0 },
-            { question: "৩৯. 'উইংস অফ ফায়ার' আত্মজীবনীটি কার লেখা?", options: ["এ. পি. জে. আব্দুল কালাম", "অটল বিহারী বাজপেয়ী", "প্রণব মুখার্জী", "মনমোহন সিং"], correct: 0 },
-            { question: "৪০. অজন্তা গুহা ভারতের কোন রাজ্যে অবস্থিত?", options: ["মধ্যপ্রদেশ", "মহারাষ্ট্র", "গুজরাট", "রাজস্থান"], correct: 1 },
-            { question: "৪১. জাতীয় সাইন্স দিবস (National Science Day) কবে পালিত হয়?", options: ["২৮শে ফেব্রুয়ারি", "২৮শে মার্চ", "১৫ই জানুয়ারি", "২৪শে ডিসেম্বর"], correct: 0 },
-            { question: "৪২. ডুরান্ড কাপ কোন খেলার সাথে যুক্ত?", options: ["ক্রিকেট", "ফুটবল", "হকি", "টেনিস"], correct: 1 },
-            { question: "৪৩. 'লাইট হাউস অফ দি মেডিটেরেনিয়ান' কোন আগ্নেয়গিরিকে বলা হয়?", options: ["স্ট্রম্বোলি", "ভিসুভিয়াস", "এটনা", "কোতোপাক্সি"], correct: 0 },
-            { question: "৪৪. ভারতের স্থায়ী গবেষণা কেন্দ্র 'দক্ষিণ গঙ্গোত্রী' কোথায় অবস্থিত?", options: ["হিমালয়", "আন্টার্কটিকা", "ভারত মহাসাগর", "আরব সাগর"], correct: 1 },
-            { question: "৪৫. অলিম্পিক গেমসের পতাকায় কয়টি বলয় থাকে?", options: ["৪টি", "৫টি", "৬টি", "৭টি"], correct: 1 },
-            { question: "৪৬. ভারতের কোন রাজ্যকে 'স্পাইস গার্ডেন' বা মশলার বাগান বলা হয়?", options: ["কেরালা", "কর্ণাটক", "তামিলনাড়ু", "অন্ধ্রপ্রদেশ"], correct: 0 },
-            { question: "৪৭. ভারতের সর্বোচ্চ জলপ্রপাত কোনটি?", options: ["যোগ জলপ্রপাত", "কুঞ্চিকল", "শিবসমুদ্রম", "দুধসাগর"], correct: 1 },
-            { question: "৪৮. ভারতের রাষ্ট্রপতি হওয়ার জন্য সর্বনিম্ন বয়স কত হতে হয়?", options: ["২৫ বছর", "৩০ বছর", "৩৫ বছর", "৪০ বছর"], correct: 2 },
-            { question: "৪৯. রাষ্ট্রসংঘের (UNO) সদর দপ্তর কোথায় অবস্থিত?", options: ["নিউ ইয়র্ক", "জেনেভা", "প্যারিস", "লন্ডন"], correct: 0 },
-            { question: "৫০. 'মাই কান্ট্রি মাই লাইফ' গ্রন্থটি কার রচনা?", options: ["লালকৃষ্ণ আদবানি", "এ. পি. জে. আব্দুল কালাম", "মনমোহন সিং", "অটল বিহারী বাজপেয়ী"], correct: 0 },
-            { question: "৫১. মহীশূরের সিংহ কাকে বলা হতো?", options: ["টিপু সুলতান", "হায়দার আলী", "শিবাজী", "প্রথম বাজিরাও"], correct: 0 },
-            { question: "৫২. ভারতের কোন রাজ্যে প্রথম সূর্যোদয় হয়?", options: ["অরুণাচল প্রদেশ", "অসম", "মিজোরাম", "নাগাল্যান্ড"], correct: 0 },
-            { question: "৫৩. রক্ততঞ্চনে সাহায্য করে কোন ভিটামিন?", options: ["ভিটামিন A", "ভিটামিন B", "ভিটামিন E", "ভিটামিন K"], correct: 3 },
-            { question: "৫৪. ভারতের আইনসভার উচ্চকক্ষ কোনটি?", options: ["লোকসভা", " রাজ্যসভা", "বিধানসভা", "সুপ্রিম কোর্ট"], correct: 1 },
-            { question: "৫৫. প্রথম বাঙালি নোবেল বিজয়ী কে?", options: ["রবীন্দ্রনাথ ঠাকুর", "অমর্ত্য সেন", "অভিজিৎ বন্দ্যোপাধ্যায়", "কাজী নজরুল ইসলাম"], correct: 0 },
-            { question: "৫৬. পঙ্গপালের আক্রমণের মূল কারণ কোনটি?", options: ["কীটপতঙ্গ", "পাখি", "সরীসৃপ", "স্তন্যপায়ী"], correct: 0 },
-            { question: "৫৭. লোকসভার অধিবেশন কে আহ্বান করেন?", options: ["প্রধানমন্ত্রী", "রাষ্ট্রপতি", "স্পিকার", "উপরাষ্ট্রপতি"], correct: 1 },
-            { question: "৫৮. সিন্ধু সভ্যতার সামুদ্রিক বন্দর কোনটি ছিল?", options: ["লোথাল", "হরপ্পা", "মহেঞ্জোদাড়ো", "কালিবঙ্গান"], correct: 0 },
-            { question: "৫৯. সৌরজগতের দীর্ঘতম দিন কোন গ্রহে হয়?", options: ["শুক্র", "বৃহস্পতি", "বুধ", "মঙ্গল"], correct: 0 },
-            { question: "৬০. সবুজ বিপ্লব ভারতের কোন ফসলের উৎপাদনে সবচেয়ে বেশি প্রভাব ফেলে?", options: ["ধান", "গম", "ডাল", "চা"], correct: 1 },
-            { question: "৬১. ভারতের দীর্ঘতম জাতীয় সড়ক কোনটি?", options: ["NH 44", "NH 7", "NH 2", "NH 1"], correct: 0 },
-            { question: "৬২. কোন মহাসাগরকে 'অন্ধকারাচ্ছন্ন মহাসাগর' বলা হতো?", options: ["আটলান্টিক মহাসাগর", "প্রশান্ত মহাসাগর", "ভারত মহাসাগর", "উত্তর মহাসাগর"], correct: 0 },
-            { question: "৬৩. গায়ত্রী মন্ত্র কোন বেদে উল্লেখ রয়েছে?", options: ["ঋগ্বেদ", "সামবেদ", "যজুর্বেদ", "অথর্ববেদ"], correct: 0 },
-            { question: "৬৪. কাইগা পারমাণবিক বিদ্যুৎ কেন্দ্র কোন রাজ্যে অবস্থিত?", options: ["কর্ণাটক", "তামিলনাড়ু", "মহারাষ্ট্র", "গুজরাট"], correct: 0 },
-            { question: "৬৫. রাজ তরঙ্গিণী বইটির রচিয়তা কে?", options: ["কলহণ", "বিলহণ", "বাণভট্ট", "কৌটিল্য"], correct: 0 },
-            { question: "৬৬. ভারতের সংবিধান সংশোধন প্রক্রিয়া কোন দেশের অনুকরণে গৃহীত?", options: ["দক্ষিণ আফ্রিকা", "যুক্তরাষ্ট্র", "ব্রিটেন", "রাশিয়া"], correct: 0 },
-            { question: "৬৭. শুষ্ক বরফ (Dry Ice) আসলে কী?", options: ["কঠিন কার্বন ডাই অক্সাইড", "কঠিন নাইট্রোজেন", "কঠিন অক্সিজেন", "বরফ জল"], correct: 0 },
-            { question: "৬৮. কত সালে নীতি আয়োগ (NIT Aayog) গঠিত হয়?", options: ["২০১৪", "২০১৫", "২০১৬", "২০১৭"], correct: 1 },
-            { question: "৬৯. আন্তর্জাতিক ব্যাঘ্র দিবস (Global Tiger Day) কবে পালিত হয়?", options: ["২৯শে জুলাই", "১৫ই আগস্ট", "৫ই সেপ্টেম্বর", "২১শে মার্চ"], correct: 0 },
-            { question: "৭০. চিপকো আন্দোলন কিসের সাথে যুক্ত ছিল?", options: ["বৃক্ষ রোপণ ও বন সংরক্ষণ", "নদী বাঁচাও", "মৃত্তিকা সংরক্ষণ", "বন্যপ্রাণী রক্ষা"], correct: 0 },
-            { question: "৭১. লোকতাক হ্রদ ভারতের কোন রাজ্যে অবস্থিত?", options: ["মণিপুর", "মেঘালয়", "অসাম", "ত্রিপুরা"], correct: 0 },
-            { question: "৭২. গৌতম বুদ্ধ কোথায় জ্ঞান লাভ করেছিলেন?", options: ["বোধগয়া", "সারনাথ", "লুম্বিনী", "কুশীনগর"], correct: 0 },
-            { question: "৭৩. প্রথম আধুনিক অলিম্পিক গেমস কোথায় অনুষ্ঠিত হয়েছিল?", options: ["এথেন্স", "প্যারিস", "লন্ডন", "বার্লিন"], correct: 0 },
-            { question: "৭৪. পেনিসিলিন কে আবিষ্কার করেন?", options: ["অলেকজান্ডার ফ্লেমিং", "লুই পাস্তুর", "এডওয়ার্ড জেনার", "রবার্ট হুক"], correct: 0 },
-            { question: "৭৫. ভারতের প্রবেশদ্বার কাকে বলা হয়?", options: ["মুম্বাই", "কলকাতা", "দিল্লি", "চেন্নাই"], correct: 0 },
-            { question: "৭৬. ভারত ছাড়ো আন্দোলন কত সালে শুরু হয়েছিল?", options: ["১৯৪২", "১৯৪০", "১৯৪৫", "১৯৪৭"], correct: 0 },
-            { question: "৭৭. কথাকলি কোন রাজ্যের শাস্ত্রীয় নৃত্য?", options: ["কেরালা", "তামিলনাড়ু", "অন্ধ্রপ্রদেশ", "কর্ণাটক"], correct: 0 },
-            { question: "৭৮. আন্তর্জাতিক স্বাক্ষরতা দিবস কবে পালন করা হয়?", options: ["৮ই সেপ্টেম্বর", "৫ই অক্টোবর", "১৪ই নভেম্বর", "১লা ডিসেম্বর"], correct: 0 },
-            { question: "৭৯. রক্তের লাল রঙের জন্য দায়ী কোনটি?", options: ["হিমোগ্লোবিন", "মাইওগ্লোবিন", "প্লাজমা", "ডব্লিউবিসি"], correct: 0 },
-            { question: "৮০. ভারতের রিজার্ভ ব্যাঙ্ক (RBI) কত সালে প্রতিষ্ঠিত হয়?", options: ["১৯ ৩৫", "১৯৪৭", "১৯৫০", "১৯৪৭"], correct: 0 },
-            { question: "৮১. সার্ক (SAARC)-এর সদর দপ্তর কোথায়?", options: ["কাঠমান্ডু", "ঢাকা", "নতুন দিল্লি", "কলম্বো"], correct: 0 },
-            { question: "৮২. রাজীব গান্ধী খেল রত্ন পুরস্কারের নতুন নাম কী?", options: ["মেজর ধ্যানচাঁদ খেল রত্ন", "অটল খেল রত্ন", "নেতাজী খেল রত্ন", "ইন্দ্রপ্রস্থ খেল রত্ন"], correct: 0 },
-            { question: "৮৩. বিশ্ব জনসংখ্যা দিবস কবে পালিত হয়?", options: ["১১ই জুলাই", "১১ই জুন", "১৫ই আগস্ট", "১০ই ডিসেম্বর"], correct: 0 },
-            { question: "৮৪. মানবদেহের সবচেয়ে ক্ষুদ্রতম অস্থির নাম কী?", options: ["স্টেপিস", "ফিমার", "হিউমেরাস", "রেডিয়াস"], correct: 0 },
-            { question: "৮৫. ভারতের তোতাপাখি কাকে বলা হতো?", options: ["আমীর খসরু", "তানসেন", "বীরবল", "আবুল ফজল"], correct: 0 },
-            { question: "৮৬. থর মরুভূমি ভারতের কোন রাজ্যে প্রধানত অবস্থিত?", options: ["রাজস্থান", "গুজরাট", "পঞ্জাব", "হরিয়ানা"], correct: 0 },
-            { question: "৮৭. পঞ্চায়েতি রাজ ব্যবস্থার সর্বনিম্ন স্তর কোনটি?", options: ["গ্রাম পঞ্চায়েত", "পঞ্চায়েত সমিতি", "জেলা পরিষদ", "গ্রামসভা"], correct: 0 },
-            { question: "৮৮. পংগল উৎসব কোন রাজ্যে উদযাপিত হয়?", options: ["তামিলনাড়ু", "কেরালা", "অন্ধ্রপ্রদেশ", "কর্ণাটক"], correct: 0 },
-            { question: "৮৯. বিহু কোন রাজ্যের জাতীয় উৎসব?", options: ["অসম", "পশ্চিমবঙ্গ", "ওড়িশা", "ঝাড়খণ্ড"], correct: 0 },
-            { question: "৯০. ভারতের সুপ্রিম কোর্টের প্রথম প্রধান বিচারপতি কে ছিলেন?", options: ["হীরালাল জে. কানিয়া", "এম. পতঞ্জলি শাস্ত্রী", "মেহের চান্দ মহাজন", "বি. কে. মুখার্জী"], correct: 0 },
-            { question: "৯১. সুন্দরবন ন্যাশনাল পার্ক ভারতের কোন রাজ্যে?", options: ["পশ্চিমবঙ্গ", "ওড়িশা", "অসম", "আন্দামান"], correct: 0 },
-            { question: "৯২. 'পিঙ্ক সিটি' বা গোলাপি শহর কাকে বলা হয়?", options: ["জয়পুর", "উদয়পুর", "জোধপুর", "আজমীর"], correct: 0 },
-            { question: "৯৩. ওজোন স্তর বায়ুমণ্ডলের কোন স্তরে পাওয়া যায়?", options: ["স্ট্র্যাটোপজ/স্ট্র্যাটোস্ফিয়ার", "ট্রপোস্ফিয়ার", "মেসোস্ফিয়ার", "থার্মোস্ফিয়ার"], correct: 0 },
-            { question: "৯৪. নালন্দা বিশ্ববিদ্যালয় কে ধ্বংস করেছিলেন?", options: ["বখতিয়ার খিলজি", "মহম্মদ ঘোরী", "মাহমুদ গজনী", "বাবর"], correct: 0 },
-            { question: "৯৫. মানবদেহের রাসায়নিক কারখানা কাকে বলা হয়?", options: ["যকৃৎ (Liver)", "বৃক্ক (Kidney)", "হৃদপিণ্ড", "ফুসফুস"], correct: 0 },
-            { question: "৯৬. ডুরান্ড রেখা কোন দুটি দেশের সীমানা নির্দেশ করে?", options: ["পাকিস্তান ও আফগানিস্তান", "ভারত ও চীন", "ভারত ও পাকিস্তান", "ভারত ও বাংলাদেশ"], correct: 0 },
-            { question: "৯৭. সৌরজগতের সবচেয়ে ছোট গ্রহ কোনটি?", options: ["বুধ", "মঙ্গল", "শুক্র", "প্লুটো"], correct: 0 },
-            { question: "৯৮. হরপ্পা সভ্যতা আবিষ্কৃত হয় কত সালে?", options: ["১৯২১", "১৯২২", "১৯১৯", "১৯৩১"], correct: 0 },
-            { question: "৯৯. লোকসভার সদস্য হওয়ার ন্যূনতম বয়স কত?", options: ["২৫ বছর", "৩০ বছর", "৩৫ বছর", "১৮ বছর"], correct: 0 },
-            { question: "১০০. বিশ্ব খাদ্য দিবস কবে পালন করা হয়?", options: ["১৬ই অক্টোবর", "২৪শে অক্টোবর", "৫ই জুন", "১লা ডিসেম্বর"], correct: 0 }
+            { question: "২০. জাপানের মুদ্রার নাম কী?", options: ["ইউয়ান", "ইয়েন", "উন", "রুপিয়া"], correct: 1 }
         ];
 
+        const questionsMath = [
+            { question: "১. ২টি সংখ্যার অনুপাত ৩:৪ এবং তাদের গ.সা.গু ৪ হলে, ল.সা.গু কত?", options: ["৪৮", "৩৬", "২৪", "৬০"], correct: 0 },
+            { question: "২. এক ব্যক্তি ১০% লাভে একটি দ্রব্য বিক্রি করে। বিক্রয়মূল্য দ্বিগুণ হলে লাভ কত হবে?", options: ["১২০%", "১০০%", "২২০%", "২০০%"], correct: 2 },
+            { question: "৩. বার্ষিক ৫% হারে কত বছরে ৫০০ টাকার সরল সুদ ১০০ টাকা হবে?", options: ["৩ বছর", "৪ বছর", "৫ বছর", "২ বছর"], correct: 1 },
+            { question: "৪. পিতা ও পুত্রের বর্তমান বয়সের অনুপাত ৭:২। ৫ বছর পর তাদের বয়সের অনুপাত ৮:৩ হলে পুত্রের বর্তমান বয়স কত?", options: ["১০ বছর", "১২ বছর", "১৪ বছর", "১৫ বছর"], correct: 0 },
+            { question: "৫. একটি ট্রেন ১২০ মিটার দীর্ঘ একটি সেতুকে ১০ সেকেন্ডে অতিক্রম করে। ট্রেনের গতিবেগ ৭২ কিমি/ঘণ্টা হলে ট্রেনের দৈর্ঘ্য কত?", options: ["৮০ মিটার", "১০০ মিটার", "১২০ মিটার", "১৫০ মিটার"], correct: 0 }
+        ];
+
+        const questionsGI = [
+            { question: "১. যদি CAT = 24 এবং DOG = 26 হয়, তবে PIG = ?", options: ["32", "30", "34", "36"], correct: 0 },
+            { question: "২. অসংগত কোনটি নির্ণয় করুন: আপেল, আম, আলু, কলা", options: ["আপেল", "আম", "আলু", "কলা"], correct: 2 },
+            { question: "৩. ২, ৬, ১২, ২০, ৩০, __? পরবর্তী সংখ্যাটি কত?", options: ["৪২", "৪০", "৪৪", "৪৬"], correct: 0 },
+            { question: "৪. A হলো B-এর ভাই, C হলো A-এর মা। তাহলে C, B-এর কে হন?", options: ["মা", "বোন", "পিসি", "কাকিমা"], correct: 0 },
+            { question: "৫. ঘড়িতে যখন ৩টে বাজে, তখন ঘণ্টা ও মিনিটের কাঁটার মধ্যে কোণের পরিমাণ কত?", options: ["৯০°", "৪৫°", "১৮০°", "৬০°"], correct: 0 }
+        ];
+
+        let activeQuestions = [];
         let currentQIndex = 0;
         let score = 0;
         let selectedOpt = null;
 
-        function startMockTest() {
+        function startMockTest(subject) {
             currentQIndex = 0;
             score = 0;
+            
+            if (subject === 'gk') {
+                activeQuestions = questionsGK;
+                document.getElementById('modalTitle').innerText = "GK Special Mock Test";
+            } else if (subject === 'math') {
+                activeQuestions = questionsMath;
+                document.getElementById('modalTitle').innerText = "Math Practice Mock Test";
+            } else if (subject === 'gi') {
+                activeQuestions = questionsGI;
+                document.getElementById('modalTitle').innerText = "Reasoning & GI Mock Test";
+            }
+
             document.getElementById('quizModal').style.display = 'flex';
             document.getElementById('quizBody').style.display = 'block';
             document.getElementById('resultBody').style.display = 'none';
@@ -294,9 +246,9 @@
 
         function showQuestion() {
             selectedOpt = null;
-            const q = quizData[currentQIndex];
+            const q = activeQuestions[currentQIndex];
             document.getElementById('qText').innerText = q.question;
-            document.getElementById('qCount').innerText = `প্রশ্ন ${currentQIndex + 1} / ${quizData.length}`;
+            document.getElementById('qCount').innerText = `প্রশ্ন ${currentQIndex + 1} / ${activeQuestions.length}`;
             
             const optList = document.getElementById('optList');
             optList.innerHTML = '';
@@ -320,18 +272,18 @@
                 return;
             }
 
-            if (selectedOpt === quizData[currentQIndex].correct) {
+            if (selectedOpt === activeQuestions[currentQIndex].correct) {
                 score++;
             }
 
             currentQIndex++;
 
-            if (currentQIndex < quizData.length) {
+            if (currentQIndex < activeQuestions.length) {
                 showQuestion();
             } else {
                 document.getElementById('quizBody').style.display = 'none';
                 document.getElementById('resultBody').style.display = 'block';
-                document.getElementById('finalScore').innerText = `আপনার মোট প্রাপ্ত নম্বর: ${score} / ${quizData.length}`;
+                document.getElementById('finalScore').innerText = `আপনার মোট প্রাপ্ত নম্বর: ${score} / ${activeQuestions.length}`;
             }
         }
     </script>
