@@ -36,7 +36,7 @@
         .card-title { font-size: 15px; font-weight: 700; color: #2d3748; margin-bottom: 15px; line-height: 1.3; }
         .btn-card { background: #00b4d8; color: #fff; border: none; padding: 10px; border-radius: 4px; font-weight: 600; cursor: pointer; text-align: center; font-size: 13px; width: 100%; }
 
-        /* Modal & Admin Styling */
+        /* Modal Styling */
         .quiz-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
         .quiz-modal-content { background: #fff; width: 90%; max-width: 650px; padding: 25px; border-radius: 10px; max-height: 90vh; overflow-y: auto; }
         .quiz-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
@@ -66,7 +66,7 @@
         <!-- Sidebar Navigation -->
         <div class="sidebar">
             <a class="menu-item active">🏠 Home</a>
-            <div class="sidebar-section">TEST SERIES</div>
+            <div class="sidebar-section">TEST SERIES (20 MIN EACH)</div>
             <a class="menu-item" onclick="startMockTest('gk')">🌍 GK Special Test</a>
             <a class="menu-item" onclick="startMockTest('math')">🔢 Math Booster Test</a>
             <a class="menu-item" onclick="startMockTest('gi')">🧩 GI & Reasoning Test</a>
@@ -74,7 +74,7 @@
 
         <!-- Main Content -->
         <div class="content">
-            <div class="page-title">Subject-Wise Mock Test Series</div>
+            <div class="page-title">Subject-Wise Mock Test Series (Time: 20 Mins)</div>
             <div class="cards-grid">
                 
                 <div class="test-card">
@@ -82,7 +82,7 @@
                         <div class="card-tag"><span>GENERAL KNOWLEDGE</span> <span id="gkCountTag">0 Questions</span></div>
                         <div class="card-title">General Knowledge & Current Affairs Test</div>
                     </div>
-                    <button class="btn-card" onclick="startMockTest('gk')">Start GK Test</button>
+                    <button class="btn-card" onclick="startMockTest('gk')">Start GK Test (20 Min)</button>
                 </div>
 
                 <div class="test-card">
@@ -90,7 +90,7 @@
                         <div class="card-tag"><span>MATHEMATICS</span> <span id="mathCountTag">0 Questions</span></div>
                         <div class="card-title">Math & Numerical Ability Practice Test</div>
                     </div>
-                    <button class="btn-card" style="background:#0e9f6e;" onclick="startMockTest('math')">Start Math Test</button>
+                    <button class="btn-card" style="background:#0e9f6e;" onclick="startMockTest('math')">Start Math Test (20 Min)</button>
                 </div>
 
                 <div class="test-card">
@@ -98,7 +98,7 @@
                         <div class="card-tag"><span>REASONING</span> <span id="giCountTag">0 Questions</span></div>
                         <div class="card-title">General Intelligence & Logical Reasoning</div>
                     </div>
-                    <button class="btn-card" style="background:#8b5cf6;" onclick="startMockTest('gi')">Start Reasoning Test</button>
+                    <button class="btn-card" style="background:#8b5cf6;" onclick="startMockTest('gi')">Start Reasoning Test (20 Min)</button>
                 </div>
 
             </div>
@@ -194,14 +194,15 @@
 
         function closeModal(id) {
             document.getElementById(id).style.display = 'none';
+            if (id === 'quizModal') {
+                clearInterval(timerInterval); // পপ-আপ বন্ধ করলে টাইমার থমে যাবে
+            }
         }
 
         // গোপন URL চেক করার সিস্টেম (?admin=smart123)
         function checkSecretAdminAccess() {
             const urlParams = new URLSearchParams(window.location.search);
             const adminKey = urlParams.get('admin');
-            
-            // এখানে আপনার গোপন পাসওয়ার্ডটি সেট করা আছে: smart123
             if (adminKey === 'smart123') {
                 document.getElementById('adminModal').style.display = 'flex';
             }
@@ -233,11 +234,13 @@
             e.target.reset();
         }
 
-        // Mock Test সুবিধা
+        // Mock Test ও টাইমার ব্যবস্থা
         let activeQuestions = [];
         let currentQIndex = 0;
         let score = 0;
         let selectedOpt = null;
+        let timerInterval = null;
+        let timeLeft = 1200; // ২০ মিনিট = ১২০০ সেকেন্ড
 
         function startMockTest(subject) {
             activeQuestions = questionsDatabase[subject];
@@ -248,11 +251,38 @@
 
             currentQIndex = 0;
             score = 0;
+            
+            // GK, GI এবং MATH—প্রত্যেকটি বিষয়ের জন্যই ২০ মিনিট (১২০০ সেকেন্ড) সময় সেট করা হলো
+            timeLeft = 1200; 
+
             document.getElementById('modalTitle').innerText = subject.toUpperCase() + " Mock Test";
             document.getElementById('quizModal').style.display = 'flex';
             document.getElementById('quizBody').style.display = 'block';
             document.getElementById('resultBody').style.display = 'none';
+            
             showQuestion();
+            startTimer(); // টাইমার চালু করা হলো
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                
+                // টাইমার ফরম্যাট (যেমন: 19:59, 05:04)
+                let formattedTime = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                // হেডার অংশে টাইমার দেখাবে
+                document.getElementById('modalTitle').innerText = `Mock Test - ⏱️ সময় বাকি: ${formattedTime}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("২০ মিনিট সময় শেষ হয়ে গেছে! আপনার উত্তর স্বয়ংক্রিয়ভাবে জমা নেওয়া হলো।");
+                    finishQuiz();
+                }
+            }, 1000);
         }
 
         function showQuestion() {
@@ -292,13 +322,18 @@
             if (currentQIndex < activeQuestions.length) {
                 showQuestion();
             } else {
-                document.getElementById('quizBody').style.display = 'none';
-                document.getElementById('resultBody').style.display = 'block';
-                document.getElementById('finalScore').innerText = `আপনার প্রাপ্ত নম্বর: ${score} / ${activeQuestions.length}`;
+                finishQuiz();
             }
         }
 
-        // পেজ লোড হলে সিক্রেট ইউআরএল চেক করবে
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById('quizBody').style.display = 'none';
+            document.getElementById('resultBody').style.display = 'block';
+            document.getElementById('modalTitle').innerText = "Mock Test Result";
+            document.getElementById('finalScore').innerText = `আপনার প্রাপ্ত নম্বর: ${score} / ${activeQuestions.length}`;
+        }
+
         window.onload = function() {
             updateCardCounts();
             checkSecretAdminAccess();
