@@ -194,16 +194,9 @@
 
     <script>
         let questionsDatabase = JSON.parse(localStorage.getItem('smartCoachingDB')) || {
-            gk: [
-                { question: "১. ভারতের জাতীয় নদী কোনটি?", options: ["যমুনা", "গঙ্গা", "গো দাবরী", "সিন্ধু"], correct: 1 },
-                { question: "২. 'ভারতের সিলিকন ভ্যালি' কাকে বলা হয়?", options: ["মুম্বাই", "কলকাতা", "বেঙ্গালুরু", "হায়দ্রাবাদ"], correct: 2 }
-            ],
-            math: [
-                { question: "১. ২টি সংখ্যার অনুপাত ৩:৪ এবং তাদের গ.সা.গু ৪ হলে, ল.সা.গু কত?", options: ["৪৮", "৩৬", "২৪", "৬০"], correct: 0 }
-            ],
-            gi: [
-                { question: "১. যদি CAT = 24 এবং DOG = 26 হয়, তবে PIG = ?", options: ["32", "30", "34", "36"], correct: 0 }
-            ]
+            gk: [ ],
+            math: [ ],
+            gi: [ ]
         };
 
         function updateCardCounts() {
