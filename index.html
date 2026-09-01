@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Coaching - Dashboard & Admin Panel</title>
+    <title>Smart Coaching - Dashboard</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
         body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; height: 100vh; overflow-x: hidden; }
@@ -14,7 +14,7 @@
         .logo span { color: #fff; }
         .search-bar { background: #1a1a1a; border: 1px solid #333; border-radius: 4px; padding: 6px 12px; width: 300px; color: #fff; font-size: 13px; }
         .user-section { display: flex; align-items: center; gap: 15px; }
-        .btn-admin { background: #e53e3e; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 13px; }
+        .btn-login { background: #00b4d8; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 13px; }
 
         /* Main Layout */
         .layout { display: flex; margin-top: 60px; min-height: calc(100vh - 60px); }
@@ -48,19 +48,22 @@
         /* Form elements for Admin */
         .admin-form input, .admin-form select { width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 14px; }
         .admin-form label { font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px; }
+        .btn-close-admin { background: #e53e3e; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
+    <!-- Top Navbar -->
     <div class="top-navbar">
         <div class="logo">SMART<span>COACHING</span></div>
         <input type="text" class="search-bar" placeholder="Search for your Exam...">
         <div class="user-section">
-            <button class="btn-admin" onclick="openAdminPanel()">🔑 Admin Panel</button>
+            <button class="btn-login" onclick="alert('Student Login Panel Coming Soon!')">Log In</button>
         </div>
     </div>
 
     <div class="layout">
+        <!-- Sidebar Navigation -->
         <div class="sidebar">
             <a class="menu-item active">🏠 Home</a>
             <div class="sidebar-section">TEST SERIES</div>
@@ -69,6 +72,7 @@
             <a class="menu-item" onclick="startMockTest('gi')">🧩 GI & Reasoning Test</a>
         </div>
 
+        <!-- Main Content -->
         <div class="content">
             <div class="page-title">Subject-Wise Mock Test Series</div>
             <div class="cards-grid">
@@ -101,11 +105,12 @@
         </div>
     </div>
 
+    <!-- Quiz Modal Window -->
     <div id="quizModal" class="quiz-modal">
         <div class="quiz-modal-content">
             <div class="quiz-header">
                 <h3 id="modalTitle">Mock Test</h3>
-                <button class="btn-admin" onclick="closeModal('quizModal')">বন্ধ করুন</button>
+                <button class="btn-close-admin" onclick="closeModal('quizModal')">বন্ধ করুন</button>
             </div>
             <div id="quizBody">
                 <div class="question-text" id="qText"></div>
@@ -123,11 +128,12 @@
         </div>
     </div>
 
+    <!-- Secret Admin Panel Modal Window -->
     <div id="adminModal" class="quiz-modal">
         <div class="quiz-modal-content">
             <div class="quiz-header">
-                <h3>Admin Panel - Add New Question</h3>
-                <button class="btn-admin" onclick="closeModal('adminModal')">X</button>
+                <h3>🔒 Secret Admin Panel - Add Question</h3>
+                <button class="btn-close-admin" onclick="closeModal('adminModal')">X</button>
             </div>
             <form class="admin-form" onsubmit="addNewQuestion(event)">
                 <label>বিষয় নির্বাচন করুন:</label>
@@ -166,7 +172,7 @@
     </div>
 
     <script>
-        // ডিফল্ট কিছু প্রশ্ন (LocalStorage থেকে লোড হবে)
+        // ডিফল্ট প্রশ্নাবলী
         let questionsDatabase = JSON.parse(localStorage.getItem('smartCoachingDB')) || {
             gk: [
                 { question: "১. ভারতের জাতীয় নদী কোনটি?", options: ["যমুনা", "গঙ্গা", "গো দাবরী", "সিন্ধু"], correct: 1 },
@@ -186,18 +192,19 @@
             document.getElementById('giCountTag').innerText = questionsDatabase.gi.length + " Questions";
         }
 
-        // Admin Panel খোলার নিয়ম (পাসওয়ার্ড: 1234)
-        function openAdminPanel() {
-            let pwd = prompt("Admin Password লিখুন:");
-            if (pwd === "1234") {
-                document.getElementById('adminModal').style.display = 'flex';
-            } else if (pwd !== null) {
-                alert("ভুল পাসওয়ার্ড!");
-            }
-        }
-
         function closeModal(id) {
             document.getElementById(id).style.display = 'none';
+        }
+
+        // গোপন URL চেক করার সিস্টেম (?admin=smart123)
+        function checkSecretAdminAccess() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const adminKey = urlParams.get('admin');
+            
+            // এখানে আপনার গোপন পাসওয়ার্ডটি সেট করা আছে: smart123
+            if (adminKey === 'smart123') {
+                document.getElementById('adminModal').style.display = 'flex';
+            }
         }
 
         // নতুন প্রশ্ন যোগ করার ফাংশন
@@ -226,7 +233,7 @@
             e.target.reset();
         }
 
-        // Mock Test চালানোর জন্য
+        // Mock Test সুবিধা
         let activeQuestions = [];
         let currentQIndex = 0;
         let score = 0;
@@ -291,8 +298,11 @@
             }
         }
 
-        // শুরুতে কাউন্ট আপডেট করুন
-        updateCardCounts();
+        // পেজ লোড হলে সিক্রেট ইউআরএল চেক করবে
+        window.onload = function() {
+            updateCardCounts();
+            checkSecretAdminAccess();
+        };
     </script>
 </body>
 </html>
