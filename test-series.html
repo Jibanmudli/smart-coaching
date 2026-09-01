@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Mock Test Series</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { background: #f4f7f6; padding: 20px; }
+    .quiz-container { max-width: 700px; background: #fff; margin: 20px auto; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .quiz-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+    .timer { background: #e74c3c; color: white; padding: 6px 14px; border-radius: 20px; font-weight: bold; }
+    .question { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #2c3e50; }
+    .options { list-style: none; }
+    .option-btn { width: 100%; text-align: left; padding: 12px 15px; margin-bottom: 10px; border: 1px solid #ddd; background: #fafafa; border-radius: 6px; cursor: pointer; font-size: 16px; transition: 0.2s; }
+    .option-btn:hover { background: #eef2f7; border-color: #3498db; }
+    .option-btn.selected { background: #3498db; color: white; border-color: #3498db; }
+    .nav-btns { display: flex; justify-content: space-between; margin-top: 25px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .btn-next { background: #2ecc71; color: white; }
+    .btn-submit { background: #e74c3c; color: white; display: none; }
+    .result-box { display: none; text-align: center; padding: 20px; }
+    .score { font-size: 28px; color: #2ecc71; font-weight: bold; margin: 15px 0; }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container" id="quizBox">
+  <div class="quiz-header">
+    <h2>Mock Test - Set 1</h2>
+    <div class="timer" id="timer">Time: 02:00</div>
+  </div>
+  
+  <div id="questionContainer">
+    <div class="question" id="questionText">প্রশ্ন লোড হচ্ছে...</div>
+    <ul class="options" id="optionsList"></ul>
+  </div>
+
+  <div class="nav-btns">
+    <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()">পরবর্তী প্রশ্ন</button>
+    <button class="btn btn-submit" id="submitBtn" onclick="submitQuiz()">পরীক্ষা জমা দিন</button>
+  </div>
+</div>
+
+<div class="quiz-container result-box" id="resultBox">
+  <h2>পরীক্ষার ফলাফল</h2>
+  <div class="score" id="scoreText"></div>
+  <p id="detailsText"></p>
+  <button class="btn btn-next" style="margin-top:20px;" onclick="location.reload()">পুনরায় চেষ্টা করুন</button>
+</div>
+
+<script>
+  // প্রশ্নের তালিকা (এখানে নতুন প্রশ্ন ও সঠিক উত্তর যোগ করতে পারেন)
+  const questions = [
+    {
+      q: "১. ভারতের জাতীয় নদী কোনটি?",
+      options: ["যমুনা", "গঙ্গা", "মেঘনা", "ব্রহ্মপুত্র"],
+      correct: 1
+    },
+    {
+      q: "২. পশ্চিমবঙ্গ পুলিশের সদর দপ্তর কোথায় অবস্থিত?",
+      options: ["হাওড়া", "নবান্ন", "ভবানী ভবন", "লালবাজার"],
+      correct: 2
+    },
+    {
+      q: "৩. ৮, ১৬, ২৪, ৩২, __? পরবর্তী সংখ্যাটি কত?",
+      options: ["৩৬", "৪০", "৪৪", "৪৮"],
+      correct: 1
+    }
+  ];
+
+  let currentQ = 0;
+  let selectedAnswers = new Array(questions.length).fill(null);
+  let timeLeft = 120; // ১২০ সেকেন্ড (২ মিনিট)
+  let timerInterval;
+
+  function startTimer() {
+    timerInterval = setInterval(() => {
+      let minutes = Math.floor(timeLeft / 60);
+      let seconds = timeLeft % 60;
+      seconds = seconds < 10 ? '0' + seconds : seconds;
+      document.getElementById('timer').innerText = `Time: 0${minutes}:${seconds}`;
+      
+      if (timeLeft === 0) {
+        clearInterval(timerInterval);
+        submitQuiz();
+      }
+      timeLeft--;
+    }, 1000);
+  }
+
+  function loadQuestion() {
+    const qData = questions[currentQ];
+    document.getElementById('questionText').innerText = qData.q;
+    const optionsList = document.getElementById('optionsList');
+    optionsList.innerHTML = '';
+
+    qData.options.forEach((opt, index) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn' + (selectedAnswers[currentQ] === index ? ' selected' : '');
+      btn.innerText = opt;
+      btn.onclick = () => selectOption(index);
+      optionsList.appendChild(btn);
+    });
+
+    if (currentQ === questions.length - 1) {
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('submitBtn').style.display = 'block';
+    } else {
+      document.getElementById('nextBtn').style.display = 'block';
+      document.getElementById('submitBtn').style.display = 'none';
+    }
+  }
+
+  function selectOption(index) {
+    selectedAnswers[currentQ] = index;
+    loadQuestion();
+  }
+
+  function nextQuestion() {
+    if (currentQ < questions.length - 1) {
+      currentQ++;
+      loadQuestion();
+    }
+  }
+
+  function submitQuiz() {
+    clearInterval(timerInterval);
+    let score = 0;
+    selectedAnswers.forEach((ans, index) => {
+      if (ans === questions[index].correct) {
+        score++;
+      }
+    });
+
+    document.getElementById('quizBox').style.display = 'none';
+    document.getElementById('resultBox').style.display = 'block';
+    document.getElementById('scoreText').innerText = `আপনার প্রাপ্ত নম্বর: ${score} / ${questions.length}`;
+    document.getElementById('detailsText').innerText = `আপনি মোট ${questions.length}টি প্রশ্নের মধ্যে ${score}টি সঠিক উত্তর দিয়েছেন।`;
+  }
+
+  // কুইজ শুরু
+  startTimer();
+  loadQuestion();
+</script>
+
+</body>
+</html>
