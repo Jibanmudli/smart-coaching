@@ -9,7 +9,7 @@
         body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; height: 100vh; overflow-x: hidden; }
 
         .top-navbar { background: #000; color: #fff; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: fixed; top: 0; width: 100%; z-index: 100; }
-        .logo { font-size: 20px; font-weight: 800; color: #00b4d8; display: flex; align-items: center; gap: 8px; }
+        .logo { font-size: 20px; font-weight: 800; color: #00b4d8; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
         .logo span { color: #fff; }
         .search-bar { background: #1a1a1a; border: 1px solid #333; border-radius: 4px; padding: 6px 12px; width: 300px; color: #fff; font-size: 13px; }
         .user-section { display: flex; align-items: center; gap: 15px; }
@@ -45,12 +45,13 @@
         
         .tab-btn { padding: 8px 16px; cursor: pointer; border: none; background: #e2e8f0; font-weight: bold; border-radius: 4px; margin-right: 5px; }
         .tab-btn.active { background: #00b4d8; color: white; }
+        .btn-reset { background: #e53e3e; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
     </style>
 </head>
 <body>
 
     <div class="top-navbar">
-        <div class="logo">SMART<span>COACHING</span></div>
+        <div class="logo" ondblclick="triggerAdminLogin()" title="Double click for Admin">SMART<span>COACHING</span></div>
         <input type="text" class="search-bar" placeholder="Search for your Exam...">
         <div class="user-section">
             <button class="btn-login" onclick="alert('Student Login Panel Coming Soon!')">Log In</button>
@@ -120,11 +121,11 @@
         </div>
     </div>
 
-    <!-- Secret Admin Panel Modal -->
+    <!-- Admin Panel Modal -->
     <div id="adminModal" class="quiz-modal">
         <div class="quiz-modal-content">
             <div class="quiz-header">
-                <h3>🔒 Secret Admin Panel</h3>
+                <h3>🔒 Admin Panel</h3>
                 <button class="btn-close-admin" onclick="closeModal('adminModal')">X</button>
             </div>
             
@@ -177,32 +178,34 @@
                     <option value="gi">General Intelligence (GI)</option>
                 </select>
 
-                <label>JSON ফরম্যাটে প্রশ্নসমূহ পেস্ট করুন:</label>
-                <textarea id="bulkJsonInput" rows="10" placeholder='[
-  {
-    "question": "১. ভারতের জাতীয় পাখি কোনটি?",
-    "options": ["কাক", "ময়ূর", "বগ", "চিল"],
-    "correct": 1
-  }
-]' required></textarea>
+                <label>আপলোড মোড নির্বাচন করুন:</label>
+                <select id="uploadMode" style="margin-bottom:12px; font-weight:bold; color:#00b4d8;">
+                    <option value="replace">আগের প্রশ্ন মুছে নতুনগুলো সেট করুন (Replace)</option>
+                    <option value="append">আগের প্রশ্নের সাথে নতুনগুলো যুক্ত করুন (Add More)</option>
+                </select>
 
-                <button type="submit" class="btn-card" style="background:#00b4d8; margin-top:10px;">সব প্রশ্ন একসাথে আপলোড করুন</button>
+                <label>JSON ফরম্যাটে প্রশ্নসমূহ পেস্ট করুন:</label>
+                <textarea id="bulkJsonInput" rows="8" placeholder='JSON কোড পেস্ট করুন...' required></textarea>
+
+                <button type="submit" class="btn-card" style="background:#00b4d8; margin-top:10px;">প্রশ্ন আপলোড করুন</button>
             </form>
+
+            <button class="btn-reset" onclick="clearSubjectQuestions()">🗑️ নির্বাচিত বিষয়ের সব প্রশ্ন মুছে ফেলুন (Delete All)</button>
 
         </div>
     </div>
 
     <script>
         let questionsDatabase = JSON.parse(localStorage.getItem('smartCoachingDB')) || {
-            gk: [ ],
-            math: [ ],
-            gi: [ ]
+            gk: [],
+            math: [],
+            gi: []
         };
 
         function updateCardCounts() {
-            document.getElementById('gkCountTag').innerText = questionsDatabase.gk.length + " Questions";
-            document.getElementById('mathCountTag').innerText = questionsDatabase.math.length + " Questions";
-            document.getElementById('giCountTag').innerText = questionsDatabase.gi.length + " Questions";
+            document.getElementById('gkCountTag').innerText = (questionsDatabase.gk ? questionsDatabase.gk.length : 0) + " Questions";
+            document.getElementById('mathCountTag').innerText = (questionsDatabase.math ? questionsDatabase.math.length : 0) + " Questions";
+            document.getElementById('giCountTag').innerText = (questionsDatabase.gi ? questionsDatabase.gi.length : 0) + " Questions";
         }
 
         function closeModal(id) {
@@ -212,11 +215,12 @@
             }
         }
 
-        function checkSecretAdminAccess() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const adminKey = urlParams.get('admin');
-            if (adminKey === 'smart123') {
+        function triggerAdminLogin() {
+            let pwd = prompt("Admin Password লিখুন:");
+            if (pwd === "smart123") {
                 document.getElementById('adminModal').style.display = 'flex';
+            } else if (pwd !== null) {
+                alert("ভুল পাসওয়ার্ড!");
             }
         }
 
@@ -246,6 +250,7 @@
 
             let newQ = { question: qText, options: [o0, o1, o2, o3], correct: correct };
 
+            if(!questionsDatabase[subject]) questionsDatabase[subject] = [];
             questionsDatabase[subject].push(newQ);
             localStorage.setItem('smartCoachingDB', JSON.stringify(questionsDatabase));
             
@@ -259,21 +264,41 @@
             e.preventDefault();
             let subject = document.getElementById('bulkSubject').value;
             let rawJson = document.getElementById('bulkJsonInput').value;
+            let mode = document.getElementById('uploadMode').value;
 
             try {
                 let parsedQuestions = JSON.parse(rawJson);
                 if (Array.isArray(parsedQuestions)) {
-                    questionsDatabase[subject] = questionsDatabase[subject].concat(parsedQuestions);
+                    if (mode === 'replace') {
+                        questionsDatabase[subject] = parsedQuestions; // পুরোনো সব মুছে নতুন বসাবে
+                    } else {
+                        if(!questionsDatabase[subject]) questionsDatabase[subject] = [];
+                        questionsDatabase[subject] = questionsDatabase[subject].concat(parsedQuestions); // যোগ করবে
+                    }
                     localStorage.setItem('smartCoachingDB', JSON.stringify(questionsDatabase));
-                    alert(`${parsedQuestions.length} টি প্রশ্ন সফলভাবে যোগ করা হয়েছে!`);
+                    alert(`${parsedQuestions.length} টি প্রশ্ন সফলভাবে আপলোড করা হয়েছে!`);
                     updateCardCounts();
                     closeModal('adminModal');
                     e.target.reset();
                 } else {
-                    alert("JSON ডেটা সঠিকভাবে সাজানো হয়নি! সঠিক এরে (Array) ফরম্যাট দিন।");
+                    alert("JSON ডেটা সঠিকভাবে সাজানো হয়নি!");
                 }
             } catch (err) {
                 alert("ভুল JSON ফরম্যাট! ব্র্যাকেট বা কমাগুলো ঠিক আছে কিনা চেক করুন।");
+            }
+        }
+
+        // নির্দিষ্ট বিষয়ের সব প্রশ্ন ডিলিট করার ফাংশন
+        function clearSubjectQuestions() {
+            let subject = document.getElementById('bulkForm').style.display === 'block' ? 
+                          document.getElementById('bulkSubject').value : 
+                          document.getElementById('addSubject').value;
+
+            if (confirm(`আপনি কি নিশ্চিত যে ${subject.toUpperCase()} বিষয়ের সব প্রশ্ন মুছে ফেলতে চান?`)) {
+                questionsDatabase[subject] = [];
+                localStorage.setItem('smartCoachingDB', JSON.stringify(questionsDatabase));
+                alert(`${subject.toUpperCase()} বিষয়ের সব প্রশ্ন মুছে দেওয়া হয়েছে!`);
+                updateCardCounts();
             }
         }
 
@@ -285,8 +310,8 @@
         let timeLeft = 1200;
 
         function startMockTest(subject) {
-            activeQuestions = questionsDatabase[subject];
-            if (!activeQuestions || activeQuestions.length === 0) {
+            activeQuestions = questionsDatabase[subject] || [];
+            if (activeQuestions.length === 0) {
                 alert("এই বিষয়ে এখনো কোনো প্রশ্ন যোগ করা হয়নি!");
                 return;
             }
@@ -373,7 +398,6 @@
 
         window.onload = function() {
             updateCardCounts();
-            checkSecretAdminAccess();
         };
     </script>
 </body>
