@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Coaching - Testbook Style Dashboard</title>
+    <title>Smart Coaching - Dashboard</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
         body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; height: 100vh; overflow-x: hidden; }
@@ -19,7 +19,7 @@
         /* Main Layout */
         .layout { display: flex; margin-top: 60px; min-height: calc(100vh - 60px); }
 
-        /* Left Sidebar (Testbook Style) */
+        /* Left Sidebar */
         .sidebar { width: 220px; background: #0b132b; color: #8d99ae; display: flex; flex-direction: column; position: fixed; top: 60px; bottom: 0; padding-top: 10px; overflow-y: auto; }
         .sidebar-section { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #4a5568; padding: 12px 20px 4px; font-weight: 700; }
         .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 20px; font-size: 13px; color: #a0aec0; cursor: pointer; text-decoration: none; transition: 0.2s; }
@@ -37,9 +37,23 @@
         .card-title { font-size: 15px; font-weight: 700; color: #2d3748; margin-bottom: 15px; line-height: 1.3; }
         .btn-card { background: #00b4d8; color: #fff; border: none; padding: 8px; border-radius: 4px; font-weight: 600; cursor: pointer; text-align: center; font-size: 13px; width: 100%; }
 
-        /* Modal / Section Screens */
+        /* Modal Screens */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+
+        /* Quiz Popup Box Styling */
+        .quiz-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+        .quiz-modal-content { background: #fff; width: 90%; max-width: 650px; padding: 25px; border-radius: 10px; max-height: 90vh; overflow-y: auto; position: relative; }
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        .question-text { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: #1a202c; }
+        .options-list { list-style: none; }
+        .option-item { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; margin-bottom: 8px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 14px; }
+        .option-item:hover { background: #e2e8f0; }
+        .option-item.selected { background: #00b4d8; color: white; border-color: #00b4d8; }
+        .quiz-footer { display: flex; justify-content: space-between; margin-top: 20px; }
+        .quiz-btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .btn-close { background: #e53e3e; color: #fff; }
+        .btn-next { background: #00b4d8; color: #fff; }
     </style>
 </head>
 <body>
@@ -59,8 +73,9 @@
             <a class="menu-item active" onclick="switchTab('tests')">🏠 Home</a>
             
             <div class="sidebar-section">TESTS</div>
-            <a class="menu-item" onclick="switchTab('tests')">📝 Test Series</a>
-            <a class="menu-item" onclick="switchTab('tests')">⚡ Live Tests & Quizzes</a>
+            <!-- test-series.html ফাইলের সরাসরি লিংক এখানে বসানো হয়েছে -->
+            <a class="menu-item" href="test-series.html">📝 Test Series</a>
+            <a class="menu-item" onclick="startMockTest()">⚡ Live Tests & Quizzes</a>
             <a class="menu-item" onclick="switchTab('tests')">📄 Previous Year Papers</a>
             
             <div class="sidebar-section">STUDY MATERIAL</div>
@@ -122,120 +137,203 @@
         </div>
     </div>
 
-<script>
-    function switchTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-        
-        document.getElementById('tab-' + tabName).classList.add('active');
-        event.currentTarget.classList.add('active');
-    }
+    <!-- Live Quiz Popup Modal Window -->
+    <div id="quizModal" class="quiz-modal">
+        <div class="quiz-modal-content">
+            <div class="quiz-header">
+                <h3>Smart Coaching Mock Test</h3>
+                <button class="quiz-btn btn-close" onclick="closeMockTest()">বন্ধ করুন</button>
+            </div>
+            <div id="quizBody">
+                <div class="question-text" id="qText"></div>
+                <ul class="options-list" id="optList"></ul>
+                <div class="quiz-footer">
+                    <span id="qCount" style="font-size: 13px; align-self: center;"></span>
+                    <button class="quiz-btn btn-next" onclick="nextQuestion()">পরবর্তী প্রশ্ন</button>
+                </div>
+            </div>
+            <div id="resultBody" style="display:none; text-align:center; padding: 20px;">
+                <h2 style="color: #22c55e;">পরীক্ষা সম্পূর্ণ হয়েছে!</h2>
+                <p id="finalScore" style="font-size: 20px; font-weight: bold; margin: 15px 0;"></p>
+                <button class="quiz-btn btn-next" onclick="startMockTest()">আবার চেষ্টা করুন</button>
+            </div>
+        </div>
+    </div>
 
-    function startMockTest() {
-        alert("মক টেস্ট শুরু হচ্ছে! (এখানে প্রশ্ন আসবে)");
-    }
-</script>
-const quizData = [
-    { question: "১. ভারতের জাতীয় নদী কোনটি?", options: ["যমুনা", "গঙ্গা", "গো দাবরী", "সিন্ধু"], correct: 1 },
-    { question: "২. পশ্চিমবঙ্গের রাজ্য পশুর নাম কী?", options: ["মেছো বিড়াল", "হাতি", "রয়েল বেঙ্গল টাইগার", "সিংহ"], correct: 0 },
-    { question: "৩. 'ভারতের সিলিকন ভ্যালি' কাকে বলা হয়?", options: ["মুম্বাই", "কলকাতা", "বেঙ্গালুরু", "হায়দ্রাবাদ"], correct: 2 },
-    { question: "৪. কাজিরাঙ্গা জাতীয় উদ্যান কোথায় অবস্থিত?", options: ["পশ্চিমবঙ্গ", "অসম", "উড়িষ্যা", "বিহার"], correct: 1 },
-    { question: "৫. লোকসভার প্রথম স্পিকার কে ছিলেন?", options: ["জি. ভি. মাভলঙ্কার", "সর্বপল্লী রাধাকৃষ্ণান", "বালযোগী", "মীরা কুমার"], correct: 0 },
-    { question: "৬. বিটোভেন কোন দেশের সুরকার ছিলেন?", options: ["ফ্রান্স", "জার্মানি", "ইতালি", "ইংল্যান্ড"], correct: 1 },
-    { question: "৭. মানবদেহের বৃহত্তম অঙ্গ কোনটি?", options: ["যকৃৎ", "হৃদপিণ্ড", "ত্বক", "মস্তিষ্ক"], correct: 2 },
-    { question: "৮. বিশ্ব পরিবেশ দিবস কবে পালিত হয়?", options: ["৫ই জুন", "৮ই মার্চ", "১লা ডিসেম্বর", "২২শে এপ্রিল"], correct: 0 },
-    { question: "৯. ভারতের সংবিধান কবে গৃহীত হয়?", options: ["২৬শে জানুয়ারি ১৯৫০", "২৬শে নভেম্বর ১৯৪৯", "১৫ই আগস্ট ১৯৪৭", "৩০শে জানুয়ারি ১৯৪৮"], correct: 1 },
-    { question: "১০. আর্য সমাজের প্রতিষ্ঠাতা কে?", options: ["স্বামী বিবেকানন্দ", "রাজা রামমোহন রায়", "স্বামী দয়ানন্দ সরস্বতী", "ঈশ্বরচন্দ্র বিদ্যাসাগর"], correct: 2 },
-    { question: "১১. কাঞ্চনজঙ্ঘা শৃঙ্গ ভারতের কোন রাজ্যে অবস্থিত?", options: ["উত্তরাখণ্ড", "সিকিম", "হিমাচল প্রদেশ", "অরুণাচল প্রদেশ"], correct: 1 },
-    { question: "১২. 'ডিসকভারি অফ ইন্ডিয়া' বইটি কার লেখা?", options: ["মহাত্মা গান্ধী", "জওহরলাল নেহেরু", "নেতাজী সুভাষচন্দ্র বসু", "রবীন্দ্রনাথ ঠাকুর"], correct: 1 },
-    { question: "১৩. কোন গ্রহে 'বড় লাল দাগ' (Great Red Spot) দেখা যায়?", options: ["মঙ্গল", "বৃহস্পতি", "শনি", "শুক্র"], correct: 1 },
-    { question: "১৪. সৌরজগতের সবচেয়ে উজ্জ্বল গ্রহ কোনটি?", options: ["বুধ", "শুক্র", "মঙ্গল", "বৃহস্পতি"], correct: 1 },
-    { question: "১৫. ভারতের দীর্ঘতম বাঁধ কোনটি?", options: ["ভাকরা নাঙ্গাল", "হীরাকুদ", "তেহরি", "নাগার্জুন সাগর"], correct: 1 },
-    { question: "১৬. সুন্দরবনকে ওয়ার্ল্ড হেরিটেজ সাইট হিসেবে ঘোষণা করা হয় কিসের জন্য?", options: ["ব্যাঘ্র প্রকল্প", "ম্যানগ্রোভ অরণ্য", "জীববৈচিত্র্য", "পাখিরালয়"], correct: 2 },
-    { question: "১৭. ভারতের কেন্দ্রীয় ধান গবেষণা কেন্দ্র কোথায় অবস্থিত?", options: ["কটক", "ব্যারাকপুর", "পুনে", "হায়দ্রাবাদ"], correct: 0 },
-    { question: "১৮. সত্যশোধক সমাজ কে প্রতিষ্ঠা করেন?", options: ["জ্যোতিরাও ফুলে", "বি. আর. আম্বেদকর", "কেশবচন্দ্র সেন", "দেবেন্দ্রনাথ ঠাকুর"], correct: 0 },
-    { question: "১৯. ভিটামিন C-এর রাসায়নিক নাম কী?", options: ["রেটিনল", "অ্যাসকরবিক অ্যাসিড", "থায়ামিন", "ক্যালসিফেরল"], correct: 1 },
-    { question: "২০. জাপানের মুদ্রার নাম কী?", options: ["ইউয়ান", "ইয়েন", "উন", "রুপিয়া"], correct: 1 },
-    { question: "২১. ভারতের প্রথম মহিলা প্রধানমন্ত্রী কে ছিলেন?", options: ["সরোজিনী নাইডু", "ইন্দিরা গান্ধী", "প্রতিভা পাতিল", "সুচেতা কৃপালিনী"], correct: 1 },
-    { question: "২২. নোবেল পুরস্কার দেওয়া শুরু হয় কোন সাল থেকে?", options: ["১৯০১", "১৯০৫", "১৯১১", "১৯১৫"], correct: 0 },
-    { question: "২৩. বিশ্ব রেড ক্রস দিবস কবে পালিত হয়?", options: ["৮ই মে", "১০ই জুন", "১৫ই মে", "১লা মে"], correct: 0 },
-    { question: "২৪. কোন ভিটামিনের অভাবে রিকেট রোগ হয়?", options: ["ভিটামিন A", "ভিটামিন B", "ভিটামিন C", "ভিটামিন D"], correct: 3 },
-    { question: "২৫. ভারতের সর্বোচ্চ বেসামরিক সম্মান কোনটি?", options: ["পদ্মবিভূষণ", "ভারত রত্ন", "পদ্মভূষণ", "পরমবীর চক্র"], correct: 1 },
-    { question: "২৬. 'গীতিগোবিন্দ' কাব্যের রচিয়তা কে?", options: ["জয়দেব", "কালিদাস", "ভবভূতি", "বাণভট্ট"], correct: 0 },
-    { question: "২৭. কোন নদীকে 'দক্ষিণ ভারতের গঙ্গা' বলা হয়?", options: ["কৃষ্ণা", "কাবেরী", "গো দাবরী", "নর্মদা"], correct: 2 },
-    { question: "২৮. প্রথম বিশ্বযুদ্ধ কবে শুরু হয়েছিল?", options: ["১৯১৪", "১৯৩৯", "১৯১২", "১৯১৮"], correct: 0 },
-    { question: "২৯. পেন্সিল তৈরিতে নিচের কোনটি ব্যবহৃত হয়?", options: ["চারকোল", "গ্রাফাইট", "সিলিকন", "ফসফরাস"], correct: 1 },
-    { question: "৩০. কত সালে মহাত্মা গান্ধী ভারতে ফিরে আসেন?", options: ["১৯১৫", "১৯১৭", "১৯১৯", "১৯২১"], correct: 0 },
-    { question: "৩১. এশিয়াটিক সোসাইটি কে প্রতিষ্ঠা করেন?", options: ["উইলিয়াম জোন্স", "লর্ড কার্জন", "ওয়ারেন হেস্টিংস", "মেকলে"], correct: 0 },
-    { question: "৩২. 'বুল ফাইটিং' কোন দেশের জাতীয় খেলা?", options: ["স্পেন", "কানাডা", "মেক্সিকো", "স্কটল্যান্ড"], correct: 0 },
-    { question: "৩৩. ভারতের সংবিধানের অভিভাবক কাকে বলা হয়?", options: ["সংসদ", "রাষ্ট্রপতি", "সুপ্রিম কোর্ট", "প্রধানমন্ত্রী"], correct: 2 },
-    { question: "৩৪. আন্তর্জাতিক ন্যায়ালয় (ICJ)-এর সদর দপ্তর কোথায়?", options: ["জেনেভা", "নিউ ইয়র্ক", "হেগ", "প্যারিস"], correct: 2 },
-    { question: "৩৫. 'ইঙ্কলাব জিন্দাবাদ' স্লোগানটি প্রথম কে দিয়েছিলেন?", options: ["ভগত সিং", "সুভাষচন্দ্র বসু", "চন্দ্রশেখর আজাদ", "হসরাত মোহানি"], correct: 3 },
-    { question: "৩৬. ভারতের প্রথম আইএএস (IAS) অফিসার কে ছিলেন?", options: ["সত্যেন্দ্রনাথ ঠাকুর", "রবীন্দ্রনাথ ঠাকুর", "সুভাষচন্দ্র বসু", "উমেশচন্দ্র বন্দ্যোপাধ্যায়"], correct: 0 },
-    { question: "৩৭. কাজিরাঙ্গা জাতীয় উদ্যান কিসের জন্য বিখ্যাত?", options: ["একশৃঙ্গ গণ্ডার", "বাঘ", "হাতি", "হরিণ"], correct: 0 },
-    { question: "৩৮. কম্পিউটার বিজ্ঞান অনুসারে RAM-এর পুরো নাম কী?", options: ["Random Access Memory", "Read Access Memory", "Rapid Access Memory", "Real Access Memory"], correct: 0 },
-    { question: "৩৯. 'উইংস অফ ফায়ার' আত্মজীবনীটি কার লেখা?", options: ["এ. পি. জে. আব্দুল কালাম", "অটল বিহারী বাজপেয়ী", "প্রণব মুখার্জী", "মনমোহন সিং"], correct: 0 },
-    { question: "৪০. অজন্তা গুহা ভারতের কোন রাজ্যে অবস্থিত?", options: ["মধ্যপ্রদেশ", "মহারাষ্ট্র", "গুজরাট", "রাজস্থান"], correct: 1 },
-    { question: "৪১. জাতীয় সাইন্স দিবস (National Science Day) কবে পালিত হয়?", options: ["২৮শে ফেব্রুয়ারি", "২৮শে মার্চ", "১৫ই জানুয়ারি", "২৪শে ডিসেম্বর"], correct: 0 },
-    { question: "৪২. ডুরান্ড কাপ কোন খেলার সাথে যুক্ত?", options: ["ক্রিকেট", "ফুটবল", "হকি", "টেনিস"], correct: 1 },
-    { question: "৪৩. 'লাইট হাউস অফ দি মেডিটেরেনিয়ান' কোন আগ্নেয়গিরিকে বলা হয়?", options: ["স্ট্রম্বোলি", "ভিসুভিয়াস", "এটনা", "কোতোপাক্সি"], correct: 0 },
-    { question: "৪৪. ভারতের স্থায়ী গবেষণা কেন্দ্র 'দক্ষিণ গঙ্গোত্রী' কোথায় অবস্থিত?", options: ["হিমালয়", "আন্টার্কটিকা", "ভারত মহাসাগর", "আরব সাগর"], correct: 1 },
-    { question: "৪৫. অলিম্পিক গেমসের পতাকায় কয়টি বলয় থাকে?", options: ["৪টি", "৫টি", "৬টি", "৭টি"], correct: 1 },
-    { question: "৪৬. ভারতের কোন রাজ্যকে 'স্পাইস গার্ডেন' বা মশলার বাগান বলা হয়?", options: ["কেরালা", "কর্ণাটক", "তামিলনাড়ু", "অন্ধ্রপ্রদেশ"], correct: 0 },
-    { question: "৪৭. ভারতের সর্বোচ্চ জলপ্রপাত কোনটি?", options: ["যোগ জলপ্রপাত", "কুঞ্চিকল", "শিবসমুদ্রম", "দুধসাগর"], correct: 1 },
-    { question: "৪৮. ভারতের রাষ্ট্রপতি হওয়ার জন্য সর্বনিম্ন বয়স কত হতে হয়?", options: ["২৫ বছর", "৩০ বছর", "৩৫ বছর", "৪০ বছর"], correct: 2 },
-    { question: "৪৯. রাষ্ট্রসংঘের (UNO) সদর দপ্তর কোথায় অবস্থিত?", options: ["নিউ ইয়র্ক", "জেনেভা", "প্যারিস", "লন্ডন"], correct: 0 },
-    { question: "৫০. 'মাই কান্ট্রি মাই লাইফ' গ্রন্থটি কার রচনা?", options: ["লালকৃষ্ণ আদবানি", "এ. পি. জে. আব্দুল কালাম", "মনমোহন সিং", "অটল বিহারী বাজপেয়ী"], correct: 0 },
-    { question: "৫১. মহীশূরের সিংহ কাকে বলা হতো?", options: ["টিপু সুলতান", "হায়দার আলী", "শিবাজী", "প্রথম বাজিরাও"], correct: 0 },
-    { question: "৫২. ভারতের কোন রাজ্যে প্রথম সূর্যোদয় হয়?", options: ["অরুণাচল প্রদেশ", "অসম", "মিজোরাম", "নাগাল্যান্ড"], correct: 0 },
-    { question: "৫৩. রক্ততঞ্চনে সাহায্য করে কোন ভিটামিন?", options: ["ভিটামিন A", "ভিটামিন B", "ভিটামিন E", "ভিটামিন K"], correct: 3 },
-    { question: "৫৪. ভারতের আইনসভার উচ্চকক্ষ কোনটি?", options: ["লোকসভা", " রাজ্যসভা", "বিধানসভা", "সুপ্রিম কোর্ট"], correct: 1 },
-    { question: "৫৫. প্রথম বাঙালি নোবেল বিজয়ী কে?", options: ["রবীন্দ্রনাথ ঠাকুর", "অমর্ত্য সেন", "অভিজিৎ বন্দ্যোপাধ্যায়", "কাজী নজরুল ইসলাম"], correct: 0 },
-    { question: "৫৬. পঙ্গপালের আক্রমণের মূল কারণ কোনটি?", options: ["কীটপতঙ্গ", "পাখি", "সরীসৃপ", "স্তন্যপায়ী"], correct: 0 },
-    { question: "৫৭. লোকসভার অধিবেশন কে আহ্বান করেন?", options: ["প্রধানমন্ত্রী", "রাষ্ট্রপতি", "স্পিকার", "উপরাষ্ট্রপতি"], correct: 1 },
-    { question: "৫৮. সিন্ধু সভ্যতার সামুদ্রিক বন্দর কোনটি ছিল?", options: ["লোথাল", "হরপ্পা", "মহেঞ্জোদাড়ো", "কালিবঙ্গান"], correct: 0 },
-    { question: "৫৯. সৌরজগতের দীর্ঘতম দিন কোন গ্রহে হয়?", options: ["শুক্র", "বৃহস্পতি", "বুধ", "মঙ্গল"], correct: 0 },
-    { question: "৬০. সবুজ বিপ্লব ভারতের কোন ফসলের উৎপাদনে সবচেয়ে বেশি প্রভাব ফেলে?", options: ["ধান", "গম", "ডাল", "চা"], correct: 1 },
-    { question: "৬১. ভারতের দীর্ঘতম জাতীয় সড়ক কোনটি?", options: ["NH 44", "NH 7", "NH 2", "NH 1"], correct: 0 },
-    { question: "৬২. কোন মহাসাগরকে 'অন্ধকারাচ্ছন্ন মহাসাগর' বলা হতো?", options: ["আটলান্টিক মহাসাগর", "প্রশান্ত মহাসাগর", "ভারত মহাসাগর", "উত্তর মহাসাগর"], correct: 0 },
-    { question: "৬৩. গায়ত্রী মন্ত্র কোন বেদে উল্লেখ রয়েছে?", options: ["ঋগ্বেদ", "সামবেদ", "যজুর্বেদ", "অথর্ববেদ"], correct: 0 },
-    { question: "৬৪. কাইগা পারমাণবিক বিদ্যুৎ কেন্দ্র কোন রাজ্যে অবস্থিত?", options: ["কর্ণাটক", "তামিলনাড়ু", "মহারাষ্ট্র", "গুজরাট"], correct: 0 },
-    { question: "৬৫. রাজ তরঙ্গিণী বইটির রচিয়তা কে?", options: ["কলহণ", "বিলহণ", "বাণভট্ট", "কৌটিল্য"], correct: 0 },
-    { question: "৬৬. ভারতের সংবিধান সংশোধন প্রক্রিয়া কোন দেশের অনুকরণে গৃহীত?", options: ["দক্ষিণ আফ্রিকা", "যুক্তরাষ্ট্র", "ব্রিটেন", "রাশিয়া"], correct: 0 },
-    { question: "৬৭. শুষ্ক বরফ (Dry Ice) আসলে কী?", options: ["কঠিন কার্বন ডাই অক্সাইড", "কঠিন নাইট্রোজেন", "কঠিন অক্সিজেন", "বরফ জল"], correct: 0 },
-    { question: "৬৮. কত সালে নীতি আয়োগ (NIT Aayog) গঠিত হয়?", options: ["২০১৪", "২০১৫", "২০১৬", "২০১৭"], correct: 1 },
-    { question: "৬৯. আন্তর্জাতিক ব্যাঘ্র দিবস (Global Tiger Day) কবে পালিত হয়?", options: ["২৯শে জুলাই", "১৫ই আগস্ট", "৫ই সেপ্টেম্বর", "২১শে মার্চ"], correct: 0 },
-    { question: "৭০. চিপকো আন্দোলন কিসের সাথে যুক্ত ছিল?", options: ["বৃক্ষ রোপণ ও বন সংরক্ষণ", "নদী বাঁচাও", "মৃত্তিকা সংরক্ষণ", "বন্যপ্রাণী রক্ষা"], correct: 0 },
-    { question: "৭১. লোকতাক হ্রদ ভারতের কোন রাজ্যে অবস্থিত?", options: ["মণিপুর", "মেঘালয়", "অসাম", "ত্রিপুরা"], correct: 0 },
-    { question: "৭২. গৌতম বুদ্ধ কোথায় জ্ঞান লাভ করেছিলেন?", options: ["বোধগয়া", "সারনাথ", "লুম্বিনী", "কুশীনগর"], correct: 0 },
-    { question: "৭৩. প্রথম আধুনিক অলিম্পিক গেমস কোথায় অনুষ্ঠিত হয়েছিল?", options: ["এথেন্স", "প্যারিস", "লন্ডন", "বার্লিন"], correct: 0 },
-    { question: "৭৪. পেনিসিলিন কে আবিষ্কার করেন?", options: ["অলেকজান্ডার ফ্লেমিং", "লুই পাস্তুর", "এডওয়ার্ড জেনার", "রবার্ট হুক"], correct: 0 },
-    { question: "৭৫. ভারতের প্রবেশদ্বার কাকে বলা হয়?", options: ["মুম্বাই", "কলকাতা", "দিল্লি", "চেন্নাই"], correct: 0 },
-    { question: "৭৬. ভারত ছাড়ো আন্দোলন কত সালে শুরু হয়েছিল?", options: ["১৯৪২", "১৯৪০", "১৯৪৫", "১৯৪৭"], correct: 0 },
-    { question: "৭৭. কথাকলি কোন রাজ্যের শাস্ত্রীয় নৃত্য?", options: ["কেরালা", "তামিলনাড়ু", "অন্ধ্রপ্রদেশ", "কর্ণাটক"], correct: 0 },
-    { question: "৭৮. আন্তর্জাতিক স্বাক্ষরতা দিবস কবে পালন করা হয়?", options: ["৮ই সেপ্টেম্বর", "৫ই অক্টোবর", "১৪ই নভেম্বর", "১লা ডিসেম্বর"], correct: 0 },
-    { question: "৭৯. রক্তের লাল রঙের জন্য দায়ী কোনটি?", options: ["হিমোগ্লোবিন", "মাইওগ্লোবিন", "প্লাজমা", "ডব্লিউবিসি"], correct: 0 },
-    { question: "৮০. ভারতের রিজার্ভ ব্যাঙ্ক (RBI) কত সালে প্রতিষ্ঠিত হয়?", options: ["১৯৩৫", "১৯৪৭", "১৯৫০", "১৯৪৭"], correct: 0 },
-    { question: "৮১. সার্ক (SAARC)-এর সদর দপ্তর কোথায়?", options: ["কাঠমান্ডু", "ঢাকা", "নতুন দিল্লি", "কলম্বো"], correct: 0 },
-    { question: "৮২. রাজীব গান্ধী খেল রত্ন পুরস্কারের নতুন নাম কী?", options: ["মেজর ধ্যানচাঁদ খেল রত্ন", "অটল খেল রত্ন", "নেতাজী খেল রত্ন", "ইন্দ্রপ্রস্থ খেল রত্ন"], correct: 0 },
-    { question: "৮৩. বিশ্ব জনসংখ্যা দিবস কবে পালিত হয়?", options: ["১১ই জুলাই", "১১ই জুন", "১৫ই আগস্ট", "১০ই ডিসেম্বর"], correct: 0 },
-    { question: "৮৪. মানবদেহের সবচেয়ে ক্ষুদ্রতম অস্থির নাম কী?", options: ["স্টেপিস", "ফিমার", "হিউমেরাস", "রেডিয়াস"], correct: 0 },
-    { question: "৮৫. ভারতের তোতাপাখি কাকে বলা হতো?", options: ["আমীর খসরু", "তানসেন", "বীরবল", "আবুল ফজল"], correct: 0 },
-    { question: "৮৬. থর মরুভূমি ভারতের কোন রাজ্যে প্রধানত অবস্থিত?", options: ["রাজস্থান", "গুজরাট", "পঞ্জাব", "হরিয়ানা"], correct: 0 },
-    { question: "৮৭. পঞ্চায়েতি রাজ ব্যবস্থার সর্বনিম্ন স্তর কোনটি?", options: ["গ্রাম পঞ্চায়েত", "পঞ্চায়েত সমিতি", "জেলা পরিষদ", "গ্রামসভা"], correct: 0 },
-    { question: "৮৮. পংগল উৎসব কোন রাজ্যে উদযাপিত হয়?", options: ["তামিলনাড়ু", "কেরালা", "অন্ধ্রপ্রদেশ", "কর্ণাটক"], correct: 0 },
-    { question: "৮৯. বিহু কোন রাজ্যের জাতীয় উৎসব?", options: ["অসম", "পশ্চিমবঙ্গ", "ওড়িশা", "ঝাড়খণ্ড"], correct: 0 },
-    { question: "৯০. ভারতের সুপ্রিম কোর্টের প্রথম প্রধান বিচারপতি কে ছিলেন?", options: ["হীরালাল জে. কানিয়া", "এম. পতঞ্জলি শাস্ত্রী", "মেহের চান্দ মহাজন", "বি. কে. মুখার্জী"], correct: 0 },
-    { question: "৯১. সুন্দরবন ন্যাশনাল পার্ক ভারতের কোন রাজ্যে?", options: ["পশ্চিমবঙ্গ", "ওড়িশা", "অসম", "আন্দামান"], correct: 0 },
-    { question: "৯২. 'পিঙ্ক সিটি' বা গোলাপি শহর কাকে বলা হয়?", options: ["জয়পুর", "উদয়পুর", "জোধপুর", "আজমীর"], correct: 0 },
-    { question: "৯৩. ওজোন স্তর বায়ুমণ্ডলের কোন স্তরে পাওয়া যায়?", options: ["স্ট্র্যাটোপজ/স্ট্র্যাটোস্ফিয়ার", "ট্রপোস্ফিয়ার", "মেসোস্ফিয়ার", "থার্মোস্ফিয়ার"], correct: 0 },
-    { question: "৯৪. নালন্দা বিশ্ববিদ্যালয় কে ধ্বংস করেছিলেন?", options: ["বখতিয়ার খিলজি", "মহম্মদ ঘোরী", "মাহমুদ গজনী", "বাবর"], correct: 0 },
-    { question: "৯৫. মানবদেহের রাসায়নিক কারখানা কাকে বলা হয়?", options: ["যকৃৎ (Liver)", "বৃক্ক (Kidney)", "হৃদপিণ্ড", "ফুসফুস"], correct: 0 },
-    { question: "৯৬. ডুরান্ড রেখা কোন দুটি দেশের সীমানা নির্দেশ করে?", options: ["পাকিস্তান ও আফগানিস্তান", "ভারত ও চীন", "ভারত ও পাকিস্তান", "ভারত ও বাংলাদেশ"], correct: 0 },
-    { question: "৯৭. সৌরজগতের সবচেয়ে ছোট গ্রহ কোনটি?", options: ["বুধ", "মঙ্গল", "শুক্র", "প্লুটো"], correct: 0 },
-    { question: "৯৮. হরপ্পা সভ্যতা আবিষ্কৃত হয় কত সালে?", options: ["১৯২১", "১৯২২", "১৯১৯", "১৯৩১"], correct: 0 },
-    { question: "৯৯. লোকসভার সদস্য হওয়ার ন্যূনতম বয়স কত?", options: ["২৫ বছর", "৩০ বছর", "৩৫ বছর", "১৮ বছর"], correct: 0 },
-    { question: "১০০. বিশ্ব খাদ্য দিবস কবে পালন করা হয়?", options: ["১৬ই অক্টোবর", "২৪শে অক্টোবর", "৫ই জুন", "১লা ডিসেম্বর"], correct: 0 }
-];
+    <script>
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabName).classList.add('active');
+            if(event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+        }
+
+        // আপনার ১০০টি প্রশ্ন দিয়ে তৈরি কুইজ ডাটা
+        const quizData = [
+            { question: "১. ভারতের জাতীয় নদী কোনটি?", options: ["যমুনা", "গঙ্গা", "গো দাবরী", "সিন্ধু"], correct: 1 },
+            { question: "২. পশ্চিমবঙ্গের রাজ্য পশুর নাম কী?", options: ["মেছো বিড়াল", "হাতি", "রয়েল বেঙ্গল টাইগার", "সিংহ"], correct: 0 },
+            { question: "৩. 'ভারতের সিলিকন ভ্যালি' কাকে বলা হয়?", options: ["মুম্বাই", "কলকাতা", "বেঙ্গালুরু", "হায়দ্রাবাদ"], correct: 2 },
+            { question: "৪. কাজিরাঙ্গা জাতীয় উদ্যান কোথায় অবস্থিত?", options: ["পশ্চিমবঙ্গ", "অসম", "উড়িষ্যা", "বিহার"], correct: 1 },
+            { question: "৫. লোকসভার প্রথম স্পিকার কে ছিলেন?", options: ["জি. ভি. মাভলঙ্কার", "সর্বপল্লী রাধাকৃষ্ণান", "বালযোগী", "মীরা কুমার"], correct: 0 },
+            { question: "৬. বিটোভেন কোন দেশের সুরকার ছিলেন?", options: ["ফ্রান্স", "জার্মানি", "ইতালি", "ইংল্যান্ড"], correct: 1 },
+            { question: "৭. মানবদেহের বৃহত্তম অঙ্গ কোনটি?", options: ["যকৃৎ", "হৃদপিণ্ড", "ত্বক", "মস্তিষ্ক"], correct: 2 },
+            { question: "৮. বিশ্ব পরিবেশ দিবস কবে পালিত হয়?", options: ["৫ই জুন", "৮ই মার্চ", "১লা ডিসেম্বর", "২২শে এপ্রিল"], correct: 0 },
+            { question: "৯. ভারতের সংবিধান কবে গৃহীত হয়?", options: ["২৬শে জানুয়ারি ১৯৫০", "২৬শে নভেম্বর ১৯৪৯", "১৫ই আগস্ট ১৯৪৭", "৩০শে জানুয়ারি ১৯৪৮"], correct: 1 },
+            { question: "১০. আর্য সমাজের প্রতিষ্ঠাতা কে?", options: ["স্বামী বিবেকানন্দ", "রাজা রামমোহন রায়", "স্বামী দয়ানন্দ সরস্বতী", "ঈশ্বরচন্দ্র বিদ্যাসাগর"], correct: 2 },
+            { question: "১১. কাঞ্চনজঙ্ঘা শৃঙ্গ ভারতের কোন রাজ্যে অবস্থিত?", options: ["উত্তরাখণ্ড", "সিকিম", "হিমাচল প্রদেশ", "অরুণাচল প্রদেশ"], correct: 1 },
+            { question: "১২. 'ডিসকভারি অফ ইন্ডিয়া' বইটি কার লেখা?", options: ["মহাত্মা গান্ধী", "জওহরলাল নেহেরু", "নেতাজী সুভাষচন্দ্র বসু", "রবীন্দ্রনাথ ঠাকুর"], correct: 1 },
+            { question: "১৩. কোন গ্রহে 'বড় লাল দাগ' (Great Red Spot) দেখা যায়?", options: ["মঙ্গল", "বৃহস্পতি", "শনি", "শুক্র"], correct: 1 },
+            { question: "১৪. সৌরজগতের সবচেয়ে উজ্জ্বল গ্রহ কোনটি?", options: ["বুধ", "শুক্র", "মঙ্গল", "বৃহস্পতি"], correct: 1 },
+            { question: "১৫. ভারতের দীর্ঘতম বাঁধ কোনটি?", options: ["ভাকরা নাঙ্গাল", "হীরাকুদ", "তেহরি", "নাগার্জুন সাগর"], correct: 1 },
+            { question: "১৬. সুন্দরবনকে ওয়ার্ল্ড হেরিটেজ সাইট হিসেবে ঘোষণা করা হয় কিসের জন্য?", options: ["ব্যাঘ্র প্রকল্প", "ম্যানগ্রোভ অরণ্য", "জীববৈচিত্র্য", "পাখিরালয়"], correct: 2 },
+            { question: "১৭. ভারতের কেন্দ্রীয় ধান গবেষণা কেন্দ্র কোথায় অবস্থিত?", options: ["কটক", "ব্যারাকপুর", "পুনে", "হায়দ্রাবাদ"], correct: 0 },
+            { question: "১৮. সত্যশোধক সমাজ কে প্রতিষ্ঠা করেন?", options: ["জ্যোতিরাও ফুলে", "বি. আর. আম্বেদকর", "কেশবচন্দ্র সেন", "দেবেন্দ্রনাথ ঠাকুর"], correct: 0 },
+            { question: "১৯. ভিটামিন C-এর রাসায়নিক নাম কী?", options: ["রেটিনল", "অ্যাসকরবিক অ্যাসিড", "থায়ামিন", "ক্যালসিফেরল"], correct: 1 },
+            { question: "২০. জাপানের মুদ্রার নাম কী?", options: ["ইউয়ান", "ইয়েন", "উন", "রুপিয়া"], correct: 1 },
+            { question: "২১. ভারতের প্রথম মহিলা প্রধানমন্ত্রী কে ছিলেন?", options: ["সরোজিনী নাইডু", "ইন্দিরা গান্ধী", "প্রতিভা পাতিল", "সুচেতা কৃপালিনী"], correct: 1 },
+            { question: "২২. নোবেল পুরস্কার দেওয়া শুরু হয় কোন সাল থেকে?", options: ["১৯০১", "১৯০৫", "১৯১১", "১৯১৫"], correct: 0 },
+            { question: "২৩. বিশ্ব রেড ক্রস দিবস কবে পালিত হয়?", options: ["৮ই মে", "১০ই জুন", "১৫ই মে", "১লা মে"], correct: 0 },
+            { question: "২৪. কোন ভিটামিনের অভাবে রিকেট রোগ হয়?", options: ["ভিটামিন A", "ভিটামিন B", "ভিটামিন C", "ভিটামিন D"], correct: 3 },
+            { question: "২৫. ভারতের সর্বোচ্চ বেসামরিক সম্মান কোনটি?", options: ["পদ্মবিভূষণ", "ভারত রত্ন", "পদ্মভূষণ", "পরমবীর চক্র"], correct: 1 },
+            { question: "২৬. 'গীতিগোবিন্দ' কাব্যের রচিয়তা কে?", options: ["জয়দেব", "কালিদাস", "ভবভূতি", "বাণভট্ট"], correct: 0 },
+            { question: "২৭. কোন নদীকে 'দক্ষিণ ভারতের গঙ্গা' বলা হয়?", options: ["কৃষ্ণা", "কাবেরী", "গো দাবরী", "নর্মদা"], correct: 2 },
+            { question: "২৮. প্রথম বিশ্বযুদ্ধ কবে শুরু হয়েছিল?", options: ["১৯১৪", "১৯৩৯", "১৯১২", "১৯১৮"], correct: 0 },
+            { question: "২৯. পেন্সিল তৈরিতে নিচের কোনটি ব্যবহৃত হয়?", options: ["চারকোল", "গ্রাফাইট", "সিলিকন", "ফসফরাস"], correct: 1 },
+            { question: "৩০. কত সালে মহাত্মা গান্ধী ভারতে ফিরে আসেন?", options: ["১৯১৫", "১৯১৭", "১৯১৯", "১৯২১"], correct: 0 },
+            { question: "৩১. এশিয়াটিক সোসাইটি কে প্রতিষ্ঠা করেন?", options: ["উইলিয়াম জোন্স", "লর্ড কার্জন", "ওয়ারেন হেস্টিংস", "মেকলে"], correct: 0 },
+            { question: "৩২. 'বুল ফাইটিং' কোন দেশের জাতীয় খেলা?", options: ["স্পেন", "কানাডা", "মেক্সিকো", "স্কটল্যান্ড"], correct: 0 },
+            { question: "৩৩. ভারতের সংবিধানের অভিভাবক কাকে বলা হয়?", options: ["সংসদ", "রাষ্ট্রপতি", "সুপ্রিম কোর্ট", "প্রধানমন্ত্রী"], correct: 2 },
+            { question: "৩৪. আন্তর্জাতিক ন্যায়ালয় (ICJ)-এর সদর দপ্তর কোথায়?", options: ["জেনেভা", "নিউ ইয়র্ক", "হেগ", "প্যারিস"], correct: 2 },
+            { question: "৩৫. 'ইঙ্কলাব জিন্দাবাদ' স্লোগানটি প্রথম কে দিয়েছিলেন?", options: ["ভগত সিং", "সুভাষচন্দ্র বসু", "চন্দ্রশেখর আজাদ", "হসরাত মোহানি"], correct: 3 },
+            { question: "৩৬. ভারতের প্রথম আইএএস (IAS) অফিসার কে ছিলেন?", options: ["সত্যেন্দ্রনাথ ঠাকুর", "রবীন্দ্রনাথ ঠাকুর", "সুভাষচন্দ্র বসু", "উমেশচন্দ্র বন্দ্যোপাধ্যায়"], correct: 0 },
+            { question: "৩৭. কাজিরাঙ্গা জাতীয় উদ্যান কিসের জন্য বিখ্যাত?", options: ["একশৃঙ্গ গণ্ডার", "বাঘ", "হাতি", "হরিণ"], correct: 0 },
+            { question: "৩৮. কম্পিউটার বিজ্ঞান অনুসারে RAM-এর পুরো নাম কী?", options: ["Random Access Memory", "Read Access Memory", "Rapid Access Memory", "Real Access Memory"], correct: 0 },
+            { question: "৩৯. 'উইংস অফ ফায়ার' আত্মজীবনীটি কার লেখা?", options: ["এ. পি. জে. আব্দুল কালাম", "অটল বিহারী বাজপেয়ী", "প্রণব মুখার্জী", "মনমোহন সিং"], correct: 0 },
+            { question: "৪০. অজন্তা গুহা ভারতের কোন রাজ্যে অবস্থিত?", options: ["মধ্যপ্রদেশ", "মহারাষ্ট্র", "গুজরাট", "রাজস্থান"], correct: 1 },
+            { question: "৪১. জাতীয় সাইন্স দিবস (National Science Day) কবে পালিত হয়?", options: ["২৮শে ফেব্রুয়ারি", "২৮শে মার্চ", "১৫ই জানুয়ারি", "২৪শে ডিসেম্বর"], correct: 0 },
+            { question: "৪২. ডুরান্ড কাপ কোন খেলার সাথে যুক্ত?", options: ["ক্রিকেট", "ফুটবল", "হকি", "টেনিস"], correct: 1 },
+            { question: "৪৩. 'লাইট হাউস অফ দি মেডিটেরেনিয়ান' কোন আগ্নেয়গিরিকে বলা হয়?", options: ["স্ট্রম্বোলি", "ভিসুভিয়াস", "এটনা", "কোতোপাক্সি"], correct: 0 },
+            { question: "৪৪. ভারতের স্থায়ী গবেষণা কেন্দ্র 'দক্ষিণ গঙ্গোত্রী' কোথায় অবস্থিত?", options: ["হিমালয়", "আন্টার্কটিকা", "ভারত মহাসাগর", "আরব সাগর"], correct: 1 },
+            { question: "৪৫. অলিম্পিক গেমসের পতাকায় কয়টি বলয় থাকে?", options: ["৪টি", "৫টি", "৬টি", "৭টি"], correct: 1 },
+            { question: "৪৬. ভারতের কোন রাজ্যকে 'স্পাইস গার্ডেন' বা মশলার বাগান বলা হয়?", options: ["কেরালা", "কর্ণাটক", "তামিলনাড়ু", "অন্ধ্রপ্রদেশ"], correct: 0 },
+            { question: "৪৭. ভারতের সর্বোচ্চ জলপ্রপাত কোনটি?", options: ["যোগ জলপ্রপাত", "কুঞ্চিকল", "শিবসমুদ্রম", "দুধসাগর"], correct: 1 },
+            { question: "৪৮. ভারতের রাষ্ট্রপতি হওয়ার জন্য সর্বনিম্ন বয়স কত হতে হয়?", options: ["২৫ বছর", "৩০ বছর", "৩৫ বছর", "৪০ বছর"], correct: 2 },
+            { question: "৪৯. রাষ্ট্রসংঘের (UNO) সদর দপ্তর কোথায় অবস্থিত?", options: ["নিউ ইয়র্ক", "জেনেভা", "প্যারিস", "লন্ডন"], correct: 0 },
+            { question: "৫০. 'মাই কান্ট্রি মাই লাইফ' গ্রন্থটি কার রচনা?", options: ["লালকৃষ্ণ আদবানি", "এ. পি. জে. আব্দুল কালাম", "মনমোহন সিং", "অটল বিহারী বাজপেয়ী"], correct: 0 },
+            { question: "৫১. মহীশূরের সিংহ কাকে বলা হতো?", options: ["টিপু সুলতান", "হায়দার আলী", "শিবাজী", "প্রথম বাজিরাও"], correct: 0 },
+            { question: "৫২. ভারতের কোন রাজ্যে প্রথম সূর্যোদয় হয়?", options: ["অরুণাচল প্রদেশ", "অসম", "মিজোরাম", "নাগাল্যান্ড"], correct: 0 },
+            { question: "৫৩. রক্ততঞ্চনে সাহায্য করে কোন ভিটামিন?", options: ["ভিটামিন A", "ভিটামিন B", "ভিটামিন E", "ভিটামিন K"], correct: 3 },
+            { question: "৫৪. ভারতের আইনসভার উচ্চকক্ষ কোনটি?", options: ["লোকসভা", " রাজ্যসভা", "বিধানসভা", "সুপ্রিম কোর্ট"], correct: 1 },
+            { question: "৫৫. প্রথম বাঙালি নোবেল বিজয়ী কে?", options: ["রবীন্দ্রনাথ ঠাকুর", "অমর্ত্য সেন", "অভিজিৎ বন্দ্যোপাধ্যায়", "কাজী নজরুল ইসলাম"], correct: 0 },
+            { question: "৫৬. পঙ্গপালের আক্রমণের মূল কারণ কোনটি?", options: ["কীটপতঙ্গ", "পাখি", "সরীসৃপ", "স্তন্যপায়ী"], correct: 0 },
+            { question: "৫৭. লোকসভার অধিবেশন কে আহ্বান করেন?", options: ["প্রধানমন্ত্রী", "রাষ্ট্রপতি", "স্পিকার", "উপরাষ্ট্রপতি"], correct: 1 },
+            { question: "৫৮. সিন্ধু সভ্যতার সামুদ্রিক বন্দর কোনটি ছিল?", options: ["লোথাল", "হরপ্পা", "মহেঞ্জোদাড়ো", "কালিবঙ্গান"], correct: 0 },
+            { question: "৫৯. সৌরজগতের দীর্ঘতম দিন কোন গ্রহে হয়?", options: ["শুক্র", "বৃহস্পতি", "বুধ", "মঙ্গল"], correct: 0 },
+            { question: "৬০. সবুজ বিপ্লব ভারতের কোন ফসলের উৎপাদনে সবচেয়ে বেশি প্রভাব ফেলে?", options: ["ধান", "গম", "ডাল", "চা"], correct: 1 },
+            { question: "৬১. ভারতের দীর্ঘতম জাতীয় সড়ক কোনটি?", options: ["NH 44", "NH 7", "NH 2", "NH 1"], correct: 0 },
+            { question: "৬২. কোন মহাসাগরকে 'অন্ধকারাচ্ছন্ন মহাসাগর' বলা হতো?", options: ["আটলান্টিক মহাসাগর", "প্রশান্ত মহাসাগর", "ভারত মহাসাগর", "উত্তর মহাসাগর"], correct: 0 },
+            { question: "৬৩. গায়ত্রী মন্ত্র কোন বেদে উল্লেখ রয়েছে?", options: ["ঋগ্বেদ", "সামবেদ", "যজুর্বেদ", "অথর্ববেদ"], correct: 0 },
+            { question: "৬৪. কাইগা পারমাণবিক বিদ্যুৎ কেন্দ্র কোন রাজ্যে অবস্থিত?", options: ["কর্ণাটক", "তামিলনাড়ু", "মহারাষ্ট্র", "গুজরাট"], correct: 0 },
+            { question: "৬৫. রাজ তরঙ্গিণী বইটির রচিয়তা কে?", options: ["কলহণ", "বিলহণ", "বাণভট্ট", "কৌটিল্য"], correct: 0 },
+            { question: "৬৬. ভারতের সংবিধান সংশোধন প্রক্রিয়া কোন দেশের অনুকরণে গৃহীত?", options: ["দক্ষিণ আফ্রিকা", "যুক্তরাষ্ট্র", "ব্রিটেন", "রাশিয়া"], correct: 0 },
+            { question: "৬৭. শুষ্ক বরফ (Dry Ice) আসলে কী?", options: ["কঠিন কার্বন ডাই অক্সাইড", "কঠিন নাইট্রোজেন", "কঠিন অক্সিজেন", "বরফ জল"], correct: 0 },
+            { question: "৬৮. কত সালে নীতি আয়োগ (NIT Aayog) গঠিত হয়?", options: ["২০১৪", "২০১৫", "২০১৬", "২০১৭"], correct: 1 },
+            { question: "৬৯. আন্তর্জাতিক ব্যাঘ্র দিবস (Global Tiger Day) কবে পালিত হয়?", options: ["২৯শে জুলাই", "১৫ই আগস্ট", "৫ই সেপ্টেম্বর", "২১শে মার্চ"], correct: 0 },
+            { question: "৭০. চিপকো আন্দোলন কিসের সাথে যুক্ত ছিল?", options: ["বৃক্ষ রোপণ ও বন সংরক্ষণ", "নদী বাঁচাও", "মৃত্তিকা সংরক্ষণ", "বন্যপ্রাণী রক্ষা"], correct: 0 },
+            { question: "৭১. লোকতাক হ্রদ ভারতের কোন রাজ্যে অবস্থিত?", options: ["মণিপুর", "মেঘালয়", "অসাম", "ত্রিপুরা"], correct: 0 },
+            { question: "৭২. গৌতম বুদ্ধ কোথায় জ্ঞান লাভ করেছিলেন?", options: ["বোধগয়া", "সারনাথ", "লুম্বিনী", "কুশীনগর"], correct: 0 },
+            { question: "৭৩. প্রথম আধুনিক অলিম্পিক গেমস কোথায় অনুষ্ঠিত হয়েছিল?", options: ["এথেন্স", "প্যারিস", "লন্ডন", "বার্লিন"], correct: 0 },
+            { question: "৭৪. পেনিসিলিন কে আবিষ্কার করেন?", options: ["অলেকজান্ডার ফ্লেমিং", "লুই পাস্তুর", "এডওয়ার্ড জেনার", "রবার্ট হুক"], correct: 0 },
+            { question: "৭৫. ভারতের প্রবেশদ্বার কাকে বলা হয়?", options: ["মুম্বাই", "কলকাতা", "দিল্লি", "চেন্নাই"], correct: 0 },
+            { question: "৭৬. ভারত ছাড়ো আন্দোলন কত সালে শুরু হয়েছিল?", options: ["১৯৪২", "১৯৪০", "১৯৪৫", "১৯৪৭"], correct: 0 },
+            { question: "৭৭. কথাকলি কোন রাজ্যের শাস্ত্রীয় নৃত্য?", options: ["কেরালা", "তামিলনাড়ু", "অন্ধ্রপ্রদেশ", "কর্ণাটক"], correct: 0 },
+            { question: "৭৮. আন্তর্জাতিক স্বাক্ষরতা দিবস কবে পালন করা হয়?", options: ["৮ই সেপ্টেম্বর", "৫ই অক্টোবর", "১৪ই নভেম্বর", "১লা ডিসেম্বর"], correct: 0 },
+            { question: "৭৯. রক্তের লাল রঙের জন্য দায়ী কোনটি?", options: ["হিমোগ্লোবিন", "মাইওগ্লোবিন", "প্লাজমা", "ডব্লিউবিসি"], correct: 0 },
+            { question: "৮০. ভারতের রিজার্ভ ব্যাঙ্ক (RBI) কত সালে প্রতিষ্ঠিত হয়?", options: ["১৯ ৩৫", "১৯৪৭", "১৯৫০", "১৯৪৭"], correct: 0 },
+            { question: "৮১. সার্ক (SAARC)-এর সদর দপ্তর কোথায়?", options: ["কাঠমান্ডু", "ঢাকা", "নতুন দিল্লি", "কলম্বো"], correct: 0 },
+            { question: "৮২. রাজীব গান্ধী খেল রত্ন পুরস্কারের নতুন নাম কী?", options: ["মেজর ধ্যানচাঁদ খেল রত্ন", "অটল খেল রত্ন", "নেতাজী খেল রত্ন", "ইন্দ্রপ্রস্থ খেল রত্ন"], correct: 0 },
+            { question: "৮৩. বিশ্ব জনসংখ্যা দিবস কবে পালিত হয়?", options: ["১১ই জুলাই", "১১ই জুন", "১৫ই আগস্ট", "১০ই ডিসেম্বর"], correct: 0 },
+            { question: "৮৪. মানবদেহের সবচেয়ে ক্ষুদ্রতম অস্থির নাম কী?", options: ["স্টেপিস", "ফিমার", "হিউমেরাস", "রেডিয়াস"], correct: 0 },
+            { question: "৮৫. ভারতের তোতাপাখি কাকে বলা হতো?", options: ["আমীর খসরু", "তানসেন", "বীরবল", "আবুল ফজল"], correct: 0 },
+            { question: "৮৬. থর মরুভূমি ভারতের কোন রাজ্যে প্রধানত অবস্থিত?", options: ["রাজস্থান", "গুজরাট", "পঞ্জাব", "হরিয়ানা"], correct: 0 },
+            { question: "৮৭. পঞ্চায়েতি রাজ ব্যবস্থার সর্বনিম্ন স্তর কোনটি?", options: ["গ্রাম পঞ্চায়েত", "পঞ্চায়েত সমিতি", "জেলা পরিষদ", "গ্রামসভা"], correct: 0 },
+            { question: "৮৮. পংগল উৎসব কোন রাজ্যে উদযাপিত হয়?", options: ["তামিলনাড়ু", "কেরালা", "অন্ধ্রপ্রদেশ", "কর্ণাটক"], correct: 0 },
+            { question: "৮৯. বিহু কোন রাজ্যের জাতীয় উৎসব?", options: ["অসম", "পশ্চিমবঙ্গ", "ওড়িশা", "ঝাড়খণ্ড"], correct: 0 },
+            { question: "৯০. ভারতের সুপ্রিম কোর্টের প্রথম প্রধান বিচারপতি কে ছিলেন?", options: ["হীরালাল জে. কানিয়া", "এম. পতঞ্জলি শাস্ত্রী", "মেহের চান্দ মহাজন", "বি. কে. মুখার্জী"], correct: 0 },
+            { question: "৯১. সুন্দরবন ন্যাশনাল পার্ক ভারতের কোন রাজ্যে?", options: ["পশ্চিমবঙ্গ", "ওড়িশা", "অসম", "আন্দামান"], correct: 0 },
+            { question: "৯২. 'পিঙ্ক সিটি' বা গোলাপি শহর কাকে বলা হয়?", options: ["জয়পুর", "উদয়পুর", "জোধপুর", "আজমীর"], correct: 0 },
+            { question: "৯৩. ওজোন স্তর বায়ুমণ্ডলের কোন স্তরে পাওয়া যায়?", options: ["স্ট্র্যাটোপজ/স্ট্র্যাটোস্ফিয়ার", "ট্রপোস্ফিয়ার", "মেসোস্ফিয়ার", "থার্মোস্ফিয়ার"], correct: 0 },
+            { question: "৯৪. নালন্দা বিশ্ববিদ্যালয় কে ধ্বংস করেছিলেন?", options: ["বখতিয়ার খিলজি", "মহম্মদ ঘোরী", "মাহমুদ গজনী", "বাবর"], correct: 0 },
+            { question: "৯৫. মানবদেহের রাসায়নিক কারখানা কাকে বলা হয়?", options: ["যকৃৎ (Liver)", "বৃক্ক (Kidney)", "হৃদপিণ্ড", "ফুসফুস"], correct: 0 },
+            { question: "৯৬. ডুরান্ড রেখা কোন দুটি দেশের সীমানা নির্দেশ করে?", options: ["পাকিস্তান ও আফগানিস্তান", "ভারত ও চীন", "ভারত ও পাকিস্তান", "ভারত ও বাংলাদেশ"], correct: 0 },
+            { question: "৯৭. সৌরজগতের সবচেয়ে ছোট গ্রহ কোনটি?", options: ["বুধ", "মঙ্গল", "শুক্র", "প্লুটো"], correct: 0 },
+            { question: "৯৮. হরপ্পা সভ্যতা আবিষ্কৃত হয় কত সালে?", options: ["১৯২১", "১৯২২", "১৯১৯", "১৯৩১"], correct: 0 },
+            { question: "৯৯. লোকসভার সদস্য হওয়ার ন্যূনতম বয়স কত?", options: ["২৫ বছর", "৩০ বছর", "৩৫ বছর", "১৮ বছর"], correct: 0 },
+            { question: "১০০. বিশ্ব খাদ্য দিবস কবে পালন করা হয়?", options: ["১৬ই অক্টোবর", "২৪শে অক্টোবর", "৫ই জুন", "১লা ডিসেম্বর"], correct: 0 }
+        ];
+
+        let currentQIndex = 0;
+        let score = 0;
+        let selectedOpt = null;
+
+        function startMockTest() {
+            currentQIndex = 0;
+            score = 0;
+            document.getElementById('quizModal').style.display = 'flex';
+            document.getElementById('quizBody').style.display = 'block';
+            document.getElementById('resultBody').style.display = 'none';
+            showQuestion();
+        }
+
+        function closeMockTest() {
+            document.getElementById('quizModal').style.display = 'none';
+        }
+
+        function showQuestion() {
+            selectedOpt = null;
+            const q = quizData[currentQIndex];
+            document.getElementById('qText').innerText = q.question;
+            document.getElementById('qCount').innerText = `প্রশ্ন ${currentQIndex + 1} / ${quizData.length}`;
+            
+            const optList = document.getElementById('optList');
+            optList.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const li = document.createElement('li');
+                li.className = 'option-item';
+                li.innerText = opt;
+                li.onclick = function() {
+                    document.querySelectorAll('.option-item').forEach(el => el.classList.remove('selected'));
+                    li.classList.add('selected');
+                    selectedOpt = index;
+                };
+                optList.appendChild(li);
+            });
+        }
+
+        function nextQuestion() {
+            if (selectedOpt === null) {
+                alert("অনুগ্রহ করে একটি উত্তর নির্বাচন করুন!");
+                return;
+            }
+
+            if (selectedOpt === quizData[currentQIndex].correct) {
+                score++;
+            }
+
+            currentQIndex++;
+
+            if (currentQIndex < quizData.length) {
+                showQuestion();
+            } else {
+                document.getElementById('quizBody').style.display = 'none';
+                document.getElementById('resultBody').style.display = 'block';
+                document.getElementById('finalScore').innerText = `আপনার মোট প্রাপ্ত নম্বর: ${score} / ${quizData.length}`;
+            }
+        }
+    </script>
 </body>
 </html>
