@@ -39,7 +39,6 @@
         .option-item { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; margin-bottom: 8px; border-radius: 6px; cursor: pointer; font-size: 14px; }
         .option-item.selected { background: #00b4d8; color: white; }
         
-        /* Result & Analysis Styles */
         .result-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
         .stat-card { padding: 15px; border-radius: 8px; text-align: center; }
         .stat-correct { background: #dcfce7; color: #15803d; }
@@ -67,7 +66,7 @@
         <div class="logo" ondblclick="triggerAdminLogin()" title="Double click for Admin">SMART<span>COACHING</span></div>
         <input type="text" class="search-bar" placeholder="Search for your Exam...">
         <div class="user-section">
-            <button class="btn-login" onclick="alert('Student Login Panel Coming Soon!')">Log In</button>
+            <button class="btn-login" id="authBtn">Log In</button>
         </div>
     </div>
 
@@ -250,7 +249,7 @@
             if (pwd === "smart123") {
                 document.getElementById('adminModal').style.display = 'flex';
             } else if (pwd !== null) {
-                alert("ভুল পাসওয়ার্ড!");
+                alert("ভুল পাসওয়ার্ড!");
             }
         }
 
@@ -284,7 +283,7 @@
             questionsDatabase[subject].push(newQ);
             localStorage.setItem('smartCoachingDB', JSON.stringify(questionsDatabase));
             
-            alert("প্রশ্ন সফলভাবে যুক্ত করা হয়েছে!");
+            alert("প্রশ্ন সফলভাবে যুক্ত করা হয়েছে!");
             updateCardCounts();
             closeModal('adminModal');
             e.target.reset();
@@ -306,12 +305,12 @@
                         questionsDatabase[subject] = questionsDatabase[subject].concat(parsedQuestions);
                     }
                     localStorage.setItem('smartCoachingDB', JSON.stringify(questionsDatabase));
-                    alert(`${parsedQuestions.length} টি প্রশ্ন সফলভাবে আপলোড করা হয়েছে!`);
+                    alert(`${parsedQuestions.length} টি প্রশ্ন সফলভাবে আপলোড করা হয়েছে!`);
                     updateCardCounts();
                     closeModal('adminModal');
                     e.target.reset();
                 } else {
-                    alert("JSON ডেটা সঠিকভাবে সাজানো হয়নি!");
+                    alert("JSON ডেটা সঠিকভাবে সাজানো হয়নি!");
                 }
             } catch (err) {
                 alert("ভুল JSON ফরম্যাট!");
@@ -323,17 +322,17 @@
                           document.getElementById('bulkSubject').value : 
                           document.getElementById('addSubject').value;
 
-            if (confirm(`আপনি কি নিশ্চিত যে ${subject.toUpperCase()} বিষয়ের সব প্রশ্ন মুছে ফেলতে চান?`)) {
+            if (confirm(`আপনি কি নিশ্চিত যে ${subject.toUpperCase()} বিষয়ের সব প্রশ্ন মুছে ফেলতে চান?`)) {
                 questionsDatabase[subject] = [];
                 localStorage.setItem('smartCoachingDB', JSON.stringify(questionsDatabase));
-                alert(`${subject.toUpperCase()} বিষয়ের সব প্রশ্ন মুছে দেওয়া হয়েছে!`);
+                alert(`${subject.toUpperCase()} বিষয়ের সব প্রশ্ন মুছে দেওয়া হয়েছে!`);
                 updateCardCounts();
             }
         }
 
         // Exam Engine Variables
         let activeQuestions = [];
-        let userAnswers = []; // ছাত্রের দেওয়া উত্তরগুলো স্টোর হবে
+        let userAnswers = [];
         let currentQIndex = 0;
         let selectedOpt = null;
         let timerInterval = null;
@@ -342,7 +341,7 @@
         function startMockTest(subject) {
             activeQuestions = questionsDatabase[subject] || [];
             if (activeQuestions.length === 0) {
-                alert("এই বিষয়ে এখনো কোনো প্রশ্ন যোগ করা হয়নি!");
+                alert("এই বিষয়ে এখনো কোনো প্রশ্ন যোগ করা হয়নি!");
                 return;
             }
 
@@ -371,7 +370,7 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    alert("২০ মিনিট সময় শেষ হয়ে গেছে! আপনার উত্তর জমা নেওয়া হলো।");
+                    alert("২০ মিনিট সময় শেষ হয়ে গেছে! আপনার উত্তর জমা নেওয়া হলো।");
                     finishQuiz();
                 }
             }, 1000);
@@ -400,7 +399,7 @@
         }
 
         function skipQuestion() {
-            userAnswers[currentQIndex] = null; // চিহ্নিত করা হলো সে উত্তর দেয়নি
+            userAnswers[currentQIndex] = null;
             currentQIndex++;
             if (currentQIndex < activeQuestions.length) {
                 showQuestion();
@@ -447,12 +446,11 @@
                 else if (isSkipped) skippedCount++;
                 else wrongCount++;
 
-                // সমাধান কার্ড তৈরি
                 let solCard = document.createElement('div');
                 solCard.className = 'solution-card';
                 
-                let userAnsText = isSkipped ? "উত্তর দেওয়া হয়নি" : q.options[userAns];
-                let userAnsClass = isCorrect ? "ans-user-correct" : (isSkipped ? "ans-user-wrong" : "ans-user-wrong");
+                let userAnsText = isSkipped ? "উত্তর দেওয়া হয়নি" : q.options[userAns];
+                let userAnsClass = isCorrect ? "ans-user-correct" : "ans-user-wrong";
 
                 solCard.innerHTML = `
                     <div class="sol-q">${idx + 1}. ${q.question}</div>
@@ -474,6 +472,45 @@
         window.onload = function() {
             updateCardCounts();
         };
+    </script> 
+
+    <!-- Firebase Auth Guard -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAjH-0WA1_Q0Dzxe2TPollfxgqkkOiTgcM",
+          authDomain: "log-in-86783.firebaseapp.com",
+          projectId: "log-in-86783",
+          storageBucket: "log-in-86783.firebasestorage.app",
+          messagingSenderId: "671506061958",
+          appId: "1:671506061958:web:aa73d1ca3464e0b91d4f07",
+          measurementId: "G-Z85S0QDYKJ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const authBtn = document.getElementById('authBtn');
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            if (authBtn) {
+              authBtn.innerText = "Log Out (" + user.email.split('@')[0] + ")";
+              authBtn.onclick = () => {
+                signOut(auth).then(() => {
+                  window.location.href = "login.html";
+                });
+              };
+            }
+          } else {
+            authBtn.innerText = "Log In";
+            authBtn.onclick = () => {
+              window.location.href = "login.html";
+            };
+          }
+        });
     </script>
 </body>
 </html>
