@@ -231,12 +231,12 @@
     </div>
 
     <script>
-        let questionsDatabase = JSON.parse(localStorage.getItem('smartCoachingDB')) || { gk: [], math: [], gi: [] };
+        window.questionsDatabase = JSON.parse(localStorage.getItem('smartCoachingDB')) || { gk: [], math: [], gi: [] };
 
         function updateCardCounts() {
-            document.getElementById('gkCountTag').innerText = (questionsDatabase.gk ? questionsDatabase.gk.length : 0) + " Questions";
-            document.getElementById('mathCountTag').innerText = (questionsDatabase.math ? questionsDatabase.math.length : 0) + " Questions";
-            document.getElementById('giCountTag').innerText = (questionsDatabase.gi ? questionsDatabase.gi.length : 0) + " Questions";
+            document.getElementById('gkCountTag').innerText = (window.questionsDatabase.gk ? window.questionsDatabase.gk.length : 0) + " Questions";
+            document.getElementById('mathCountTag').innerText = (window.questionsDatabase.math ? window.questionsDatabase.math.length : 0) + " Questions";
+            document.getElementById('giCountTag').innerText = (window.questionsDatabase.gi ? window.questionsDatabase.gi.length : 0) + " Questions";
         }
 
         function closeModal(id) {
@@ -267,7 +267,7 @@
             }
         }
 
-        function addNewQuestion(e) {
+        async function addNewQuestion(e) {
             e.preventDefault();
             let subject = document.getElementById('addSubject').value;
             let qText = document.getElementById('addQuestionText').value;
@@ -279,17 +279,23 @@
 
             let newQ = { question: qText, options: [o0, o1, o2, o3], correct: correct };
 
-            if(!questionsDatabase[subject]) questionsDatabase[subject] = [];
-            questionsDatabase[subject].push(newQ);
-            localStorage.setItem('smartCoachingDB', JSON.stringify(questionsDatabase));
+            if(!window.questionsDatabase[subject]) window.questionsDatabase[subject] = [];
+            window.questionsDatabase[subject].push(newQ);
             
-            alert("প্রশ্ন সফলভাবে যুক্ত করা হয়েছে!");
+            localStorage.setItem('smartCoachingDB', JSON.stringify(window.questionsDatabase));
             updateCardCounts();
+            
+            if (typeof window.saveQuestionsToCloud === 'function') {
+                await window.saveQuestionsToCloud();
+            } else {
+                alert("প্রশ্ন সফলভাবে যুক্ত করা হয়েছে!");
+            }
+            
             closeModal('adminModal');
             e.target.reset();
         }
 
-        function addBulkQuestions(e) {
+        async function addBulkQuestions(e) {
             e.preventDefault();
             let subject = document.getElementById('bulkSubject').value;
             let rawJson = document.getElementById('bulkJsonInput').value;
@@ -299,14 +305,21 @@
                 let parsedQuestions = JSON.parse(rawJson);
                 if (Array.isArray(parsedQuestions)) {
                     if (mode === 'replace') {
-                        questionsDatabase[subject] = parsedQuestions;
+                        window.questionsDatabase[subject] = parsedQuestions;
                     } else {
-                        if(!questionsDatabase[subject]) questionsDatabase[subject] = [];
-                        questionsDatabase[subject] = questionsDatabase[subject].concat(parsedQuestions);
+                        if(!window.questionsDatabase[subject]) window.questionsDatabase[subject] = [];
+                        window.questionsDatabase[subject] = window.questionsDatabase[subject].concat(parsedQuestions);
                     }
-                    localStorage.setItem('smartCoachingDB', JSON.stringify(questionsDatabase));
-                    alert(`${parsedQuestions.length} টি প্রশ্ন সফলভাবে আপলোড করা হয়েছে!`);
+                    
+                    localStorage.setItem('smartCoachingDB', JSON.stringify(window.questionsDatabase));
                     updateCardCounts();
+                    
+                    if (typeof window.saveQuestionsToCloud === 'function') {
+                        await window.saveQuestionsToCloud();
+                    } else {
+                        alert(`${parsedQuestions.length} টি প্রশ্ন সফলভাবে আপলোড করা হয়েছে!`);
+                    }
+                    
                     closeModal('adminModal');
                     e.target.reset();
                 } else {
@@ -317,16 +330,21 @@
             }
         }
 
-        function clearSubjectQuestions() {
+        async function clearSubjectQuestions() {
             let subject = document.getElementById('bulkForm').style.display === 'block' ? 
                           document.getElementById('bulkSubject').value : 
                           document.getElementById('addSubject').value;
 
             if (confirm(`আপনি কি নিশ্চিত যে ${subject.toUpperCase()} বিষয়ের সব প্রশ্ন মুছে ফেলতে চান?`)) {
-                questionsDatabase[subject] = [];
-                localStorage.setItem('smartCoachingDB', JSON.stringify(questionsDatabase));
-                alert(`${subject.toUpperCase()} বিষয়ের সব প্রশ্ন মুছে দেওয়া হয়েছে!`);
+                window.questionsDatabase[subject] = [];
+                localStorage.setItem('smartCoachingDB', JSON.stringify(window.questionsDatabase));
                 updateCardCounts();
+                
+                if (typeof window.saveQuestionsToCloud === 'function') {
+                    await window.saveQuestionsToCloud();
+                } else {
+                    alert(`${subject.toUpperCase()} বিষয়ের সব প্রশ্ন মুছে দেওয়া হয়েছে!`);
+                }
             }
         }
 
@@ -338,15 +356,14 @@
         let timerInterval = null;
         let timeLeft = 1200;
 
-        // 🔒 Updated function with Security Check
         function startMockTest(subject) {
             if (!window.currentUser) {
-                alert("মক টেস্ট দেওয়ার জন্য আপনাকে প্রথমে লগইন করতে হবে!");
+                alert("মক টেস্ট দেওয়ার জন্য আপনাকে প্রথমে লগইন করতে হবে!");
                 window.location.href = "login.html";
                 return;
             }
 
-            activeQuestions = questionsDatabase[subject] || [];
+            activeQuestions = window.questionsDatabase[subject] || [];
             if (activeQuestions.length === 0) {
                 alert("এই বিষয়ে এখনো কোনো প্রশ্ন যোগ করা হয়নি!");
                 return;
@@ -481,10 +498,11 @@
         };
     </script> 
 
-    <!-- Firebase Auth Guard (Updated) -->
+    <!-- Firebase Auth & Firestore Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyAjH-0WA1_Q0Dzxe2TPollfxgqkkOiTgcM",
@@ -498,11 +516,37 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
         const authBtn = document.getElementById('authBtn');
 
-        // Global variable to store login status
         window.currentUser = null;
 
+        // Fetch Questions from Firestore
+        async function loadQuestionsFromCloud() {
+          try {
+            const docRef = doc(db, "exam_data", "questions");
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              window.questionsDatabase = docSnap.data();
+              localStorage.setItem('smartCoachingDB', JSON.stringify(window.questionsDatabase));
+              if (typeof updateCardCounts === 'function') updateCardCounts();
+            }
+          } catch (e) {
+            console.error("Error fetching questions: ", e);
+          }
+        }
+
+        // Save Questions to Firestore
+        window.saveQuestionsToCloud = async function() {
+          try {
+            await setDoc(doc(db, "exam_data", "questions"), window.questionsDatabase);
+            alert("প্রশ্ন সফলভাবে সব ইউজারের জন্য ক্লাউডে আপলোড হয়েছে!");
+          } catch (e) {
+            alert("ডেটা সেভ করতে সমস্যা হয়েছে: " + e.message);
+          }
+        };
+
+        // Auth State Listener
         onAuthStateChanged(auth, (user) => {
           if (user) {
             window.currentUser = user;
@@ -524,6 +568,9 @@
             }
           }
         });
+
+        // Load Questions on Page Load
+        loadQuestionsFromCloud();
     </script>
 </body>
 </html>
