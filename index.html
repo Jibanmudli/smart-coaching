@@ -230,6 +230,7 @@
         </div>
     </div>
 
+    <!-- Application Script -->
     <script>
         window.questionsDatabase = JSON.parse(localStorage.getItem('smartCoachingDB')) || { gk: [], math: [], gi: [] };
 
@@ -288,7 +289,7 @@
             if (typeof window.saveQuestionsToCloud === 'function') {
                 await window.saveQuestionsToCloud();
             } else {
-                alert("প্রশ্ন সফলভাবে যুক্ত করা হয়েছে!");
+                alert("প্রশ্ন যুক্ত হয়েছে (Local Only) - ক্লাউড কানেক্ট হয়নি!");
             }
             
             closeModal('adminModal');
@@ -317,7 +318,7 @@
                     if (typeof window.saveQuestionsToCloud === 'function') {
                         await window.saveQuestionsToCloud();
                     } else {
-                        alert(`${parsedQuestions.length} টি প্রশ্ন সফলভাবে আপলোড করা হয়েছে!`);
+                        alert(`${parsedQuestions.length} টি প্রশ্ন যুক্ত হয়েছে (Local Only)!`);
                     }
                     
                     closeModal('adminModal');
@@ -521,8 +522,8 @@
 
         window.currentUser = null;
 
-        // Fetch Questions from Firestore
-        async function loadQuestionsFromCloud() {
+        // Fetch Questions from Firestore Global Scope
+        window.loadQuestionsFromCloud = async function() {
           try {
             const docRef = doc(db, "exam_data", "questions");
             const docSnap = await getDoc(docRef);
@@ -534,15 +535,15 @@
           } catch (e) {
             console.error("Error fetching questions: ", e);
           }
-        }
+        };
 
-        // Save Questions to Firestore
+        // Save Questions to Firestore Global Scope
         window.saveQuestionsToCloud = async function() {
           try {
             await setDoc(doc(db, "exam_data", "questions"), window.questionsDatabase);
-            alert("প্রশ্ন সফলভাবে সব ইউজারের জন্য ক্লাউডে আপলোড হয়েছে!");
+            alert("প্রশ্ন সফলভাবে সব ইউজারের জন্য ক্লাউডে আপলোড হয়েছে!");
           } catch (e) {
-            alert("ডেটা সেভ করতে সমস্যা হয়েছে: " + e.message);
+            alert("ক্লাউডে সেভ করতে সমস্যা হয়েছে (Security Rule Problem): " + e.message);
           }
         };
 
@@ -569,8 +570,8 @@
           }
         });
 
-        // Load Questions on Page Load
-        loadQuestionsFromCloud();
+        // Load Questions on Initial Script Load
+        window.loadQuestionsFromCloud();
     </script>
 </body>
 </html>
