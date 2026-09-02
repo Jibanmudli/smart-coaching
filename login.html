@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login - Smart Coaching</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
+    body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f6f9; }
+    .login-card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 320px; text-align: center; }
+    .logo { font-size: 22px; font-weight: 800; color: #00b4d8; margin-bottom: 20px; }
+    .logo span { color: #333; }
+    input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
+    button { width: 100%; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 8px; }
+    .btn-login { background: #00b4d8; color: white; }
+    .btn-signup { background: #0b132b; color: white; }
+    .msg { margin-top: 15px; font-size: 13px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="logo">SMART<span>COACHING</span></div>
+    <h3 style="margin-bottom: 15px; color:#1a202c;">স্টুডেন্ট লগইন</h3>
+    
+    <input type="email" id="email" placeholder="আপনার ইমেইল দিন" required />
+    <input type="password" id="password" placeholder="পাসওয়ার্ড দিন" required />
+    
+    <button id="loginBtn" class="btn-login">Log In</button>
+    <button id="signupBtn" class="btn-signup">Sign Up (নতুন অ্যাকাউন্ট)</button>
+    
+    <p id="message" class="msg"></p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // 🎯 আপনার Firebase Config কোডটি ঠিক নিচে বসান
+    const firebaseConfig = {
+      apiKey: "AIzaSyAjH-0WA1_Q0Dzxe2TPollfxgqkkOiTgcM",
+  authDomain: "log-in-86783.firebaseapp.com",
+  projectId: "log-in-86783",
+  storageBucket: "log-in-86783.firebasestorage.app",
+  messagingSenderId: "671506061958",
+  appId: "1:671506061958:web:aa73d1ca3464e0b91d4f07",
+  measurementId: "G-Z85S0QDYKJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const message = document.getElementById('message');
+
+    // Sign Up (নতুন স্টুডেন্ট তৈরি)
+    document.getElementById('signupBtn').addEventListener('click', () => {
+      const email = emailInput.value;
+      const password = passwordInput.value;
+      if (!email || !password) return alert("ইমেইল ও পাসওয়ার্ড উভয়ই দিন");
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          message.style.color = "green";
+          message.innerText = "অ্যাকাউন্ট তৈরি সফল! এখন Log In-এ ক্লিক করুন।";
+        })
+        .catch(error => {
+          message.style.color = "red";
+          message.innerText = "ভুল: " + error.message;
+        });
+    });
+
+    // Log In
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const email = emailInput.value;
+      const password = passwordInput.value;
+      if (!email || !password) return alert("ইমেইল ও পাসওয়ার্ড উভয়ই দিন");
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          message.style.color = "green";
+          message.innerText = "লগইন সফল! রিডাইরেক্ট হচ্ছে...";
+          setTimeout(() => {
+            window.location.href = "index.html"; // মূল ড্যাশবোর্ডে নিয়ে যাবে
+          }, 1000);
+        })
+        .catch(error => {
+          message.style.color = "red";
+          message.innerText = "ইমেইল বা পাসওয়ার্ড ভুল হয়েছে।";
+        });
+    });
+  </script>
+</body>
+</html>
