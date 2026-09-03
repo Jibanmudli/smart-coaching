@@ -301,12 +301,12 @@
         function showDashboardHome() {
             const container = document.getElementById('mainContent');
             container.innerHTML = `
-                <div class="page-title">Subject-Wise Mock Test Series (Time: 20 Mins)</div>
+                <div class="page-title">Mock Test Series Portal</div>
                 <div class="cards-grid">
                     <div class="test-card">
                         <div>
                             <div class="card-tag"><span>SPECIAL LIVE TEST</span> <span id="liveCountTag">0 Questions</span></div>
-                            <div class="card-title">🔴 All India Live Mock Test</div>
+                            <div class="card-title">🔴 All India Live Mock Test (1 Hr 30 Min)</div>
                         </div>
                         <button class="btn-card" style="background:#ef4444;" onclick="startMockTest('live')">Start Live Test</button>
                     </div>
@@ -338,9 +338,21 @@
 
         function openPracticeCategory(cat) {
             const container = document.getElementById('mainContent');
-            let catName = cat === 'railway' ? '🚆 Railway Practice Sets' : (cat === 'psc' ? '🏛️ WB PSC Practice Sets' : '👮 Police Exam Practice Sets');
+            let catName = '';
+            let timeText = '';
             
-            let html = `<div class="page-title">${catName} (Set 1 to 20)</div><div class="sets-grid">`;
+            if (cat === 'railway') {
+                catName = '🚆 Railway Practice Sets';
+                timeText = '1 Hr 30 Min';
+            } else if (cat === 'psc') {
+                catName = '🏛️ WB PSC Practice Sets';
+                timeText = '1 Hr 30 Min';
+            } else if (cat === 'police') {
+                catName = '👮 Police Exam Practice Sets';
+                timeText = '1 Hour';
+            }
+            
+            let html = `<div class="page-title">${catName} (Set 1 to 20) - <span style="font-size:14px; color:#64748b;">Time: ${timeText}</span></div><div class="sets-grid">`;
             for(let i = 1; i <= 20; i++) {
                 let key = `${cat}_set_${i}`;
                 let count = window.questionsDatabase[key] ? window.questionsDatabase[key].length : 0;
@@ -515,9 +527,17 @@
             userAnswers = new Array(activeQuestions.length).fill(null);
             questionStates = new Array(activeQuestions.length).fill('unvisited');
             currentQIndex = 0;
-            timeLeft = 1200; 
+            
+            // ⭐ সময় বিভাজন (Time Logic)
+            if (key === 'live' || key.startsWith('railway_') || key.startsWith('psc_')) {
+                timeLeft = 5400; // ১ ঘন্টা ৩০ মিনিট (৯০ মিনিট = ৫৪০০ সেকেন্ড)
+            } else if (key.startsWith('police_')) {
+                timeLeft = 3600; // ১ ঘন্টা (৬০ মিনিট = ৩৬০০ সেকেন্ড)
+            } else {
+                timeLeft = 1200; // Subject Tests - ২০ মিনিট (১২০০ সেকেন্ড)
+            }
 
-            document.getElementById('modalTitle').innerText = key.toUpperCase().replace('_', ' ') + " - Mock Test";
+            document.getElementById('modalTitle').innerText = key.toUpperCase().replace(/_/g, ' ') + " - Mock Test";
             document.getElementById('quizModal').style.display = 'flex';
             document.getElementById('quizBody').style.display = 'block';
             document.getElementById('resultBody').style.display = 'none';
@@ -530,15 +550,22 @@
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 timeLeft--;
-                let minutes = Math.floor(timeLeft / 60);
+                let hours = Math.floor(timeLeft / 3600);
+                let minutes = Math.floor((timeLeft % 3600) / 60);
                 let seconds = timeLeft % 60;
-                let formattedTime = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                let formattedTime = "";
+                if (hours > 0) {
+                    formattedTime = `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                } else {
+                    formattedTime = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                }
                 
                 document.getElementById('modalTitle').innerText = `Mock Test - ⏱️ সময় বাকি: ${formattedTime}`;
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    alert("২০ মিনিট সময় শেষ হয়ে গেছে! আপনার উত্তর জমা নেওয়া হলো।");
+                    alert("পরীক্ষার নির্ধারিত সময় শেষ হয়ে গেছে! আপনার উত্তর জমা নেওয়া হলো।");
                     finishQuiz();
                 }
             }, 1000);
