@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Coaching - Advanced Portal</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
         body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; height: 100vh; overflow-x: hidden; }
@@ -40,7 +45,6 @@
         .quiz-modal-content { background: #fff; width: 95%; max-width: 950px; padding: 25px; border-radius: 10px; max-height: 90vh; overflow-y: auto; }
         .quiz-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
 
-        /* Exam Layout Grid */
         .exam-container { display: flex; gap: 20px; }
         .question-area { flex: 1; }
         .palette-area { width: 260px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
@@ -136,7 +140,10 @@
     <div id="quizModal" class="quiz-modal">
         <div class="quiz-modal-content">
             <div class="quiz-header">
-                <h3 id="modalTitle">Mock Test</h3>
+                <div>
+                    <h3 id="modalTitle" style="display:inline-block; margin-right:15px;">Mock Test</h3>
+                    <span id="timerDisplay" style="font-weight:bold; color:#ef4444; font-size:16px;">00:00</span>
+                </div>
                 <button class="btn-close-admin" onclick="closeModal('quizModal')">বন্ধ করুন</button>
             </div>
             
@@ -166,7 +173,7 @@
                         </div>
                         <div>
                             <div class="palette-legend">
-                                <div class="legend-item"><div class="legend-box" style="background:#22c55e;"></div> উত্তর দেওয়া</div>
+                                <div class="legend-item"><div class="legend-box" style="background:#22c55e;"></div> উত্তর দেওয়া</div>
                                 <div class="legend-item"><div class="legend-box" style="background:#ef4444;"></div> স্কিপ করা</div>
                                 <div class="legend-item"><div class="legend-box" style="background:#f59e0b;"></div> রিভিউ মার্ক</div>
                                 <div class="legend-item"><div class="legend-box" style="background:#e2e8f0;"></div> দেখা বাকি</div>
@@ -289,9 +296,67 @@
         </div>
     </div>
 
-    <!-- Main Logic Script -->
+    <!-- Main Logic Script with Firebase -->
     <script>
+        // ==========================================
+        // 🔑 FIREBASE CONFIGURATION (এখানটি পরিবর্তন করুন)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAjH-0WA1_Q0Dzxe2TPollfxgqkkOiTgcM",
+            authDomain: "log-in-86783.firebaseapp.com",
+            projectId: "log-in-86783",
+            storageBucket: "log-in-86783.firebasestorage.app",
+            messagingSenderId: "671506061958",
+            appId: "1:671506061958:web:aa73d1ca3464e0b91d4f07"
+        };
+
+        // Firebase Initialize
+        let db = null;
+        try {
+            if (firebaseConfig.apiKey !== "AIzaSyAjH-0WA1_Q0Dzxe2TPollfxgqkkOiTgcM") {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                console.log("Firebase Connected Successfully!");
+            }
+        } catch (e) {
+            console.error("Firebase Config Error: ", e);
+        }
+
+        window.currentUser = window.currentUser || { name: "Student" };
         window.questionsDatabase = JSON.parse(localStorage.getItem('smartCoachingDB')) || { gk: [], math: [], gi: [], live: [] };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchQuestionsFromCloud();
+            showDashboardHome();
+        });
+
+        // ☁️ Sync Questions from Firebase Cloud
+        function fetchQuestionsFromCloud() {
+            if (!db) return;
+            db.collection("examData").doc("questions").get().then((doc) => {
+                if (doc.exists) {
+                    window.questionsDatabase = doc.data();
+                    localStorage.setItem('smartCoachingDB', JSON.stringify(window.questionsDatabase));
+                    updateCardCounts();
+                }
+            }).catch((err) => {
+                console.error("Cloud Fetch Error: ", err);
+            });
+        }
+
+        // ☁️ Save Questions to Firebase Cloud
+        window.saveQuestionsToCloud = async function() {
+            if (!db) {
+                alert("Firebase সেটআপ করা নেই! কোডে API Key বসান।");
+                return;
+            }
+            try {
+                await db.collection("examData").doc("questions").set(window.questionsDatabase);
+                alert("ক্লাউড ডাটাবেসে সফলভাবে সেভ হয়েছে! সব ছাত্র এখন দেখতে পাবে।");
+            } catch (err) {
+                alert("ক্লাউডে সেভ করতে সমস্যা হয়েছে: " + err.message);
+            }
+        };
 
         function toggleSubmenu(id) {
             const el = document.getElementById(id);
@@ -439,12 +504,7 @@
             localStorage.setItem('smartCoachingDB', JSON.stringify(window.questionsDatabase));
             updateCardCounts();
             
-            if (typeof window.saveQuestionsToCloud === 'function') {
-                await window.saveQuestionsToCloud();
-            } else {
-                alert("প্রশ্ন যুক্ত হয়েছে (Local Only)!");
-            }
-            
+            await window.saveQuestionsToCloud();
             closeModal('adminModal');
             e.target.reset();
         }
@@ -468,12 +528,7 @@
                     localStorage.setItem('smartCoachingDB', JSON.stringify(window.questionsDatabase));
                     updateCardCounts();
                     
-                    if (typeof window.saveQuestionsToCloud === 'function') {
-                        await window.saveQuestionsToCloud();
-                    } else {
-                        alert(`${parsedQuestions.length} টি প্রশ্ন যুক্ত হয়েছে (Local Only)!`);
-                    }
-                    
+                    await window.saveQuestionsToCloud();
                     closeModal('adminModal');
                     e.target.reset();
                 } else {
@@ -493,12 +548,7 @@
                 window.questionsDatabase[key] = [];
                 localStorage.setItem('smartCoachingDB', JSON.stringify(window.questionsDatabase));
                 updateCardCounts();
-                
-                if (typeof window.saveQuestionsToCloud === 'function') {
-                    await window.saveQuestionsToCloud();
-                } else {
-                    alert(`${key.toUpperCase()} এর সব প্রশ্ন মুছে দেওয়া হয়েছে!`);
-                }
+                await window.saveQuestionsToCloud();
             }
         }
 
@@ -507,20 +557,13 @@
         let userAnswers = [];
         let questionStates = [];
         let currentQIndex = 0;
-        let selectedOpt = null;
         let timerInterval = null;
         let timeLeft = 1200;
 
         function startMockTest(key) {
-            if (!window.currentUser) {
-                alert("মক টেস্ট দেওয়ার জন্য আপনাকে প্রথমে লগইন করতে হবে!");
-                window.location.href = "login.html";
-                return;
-            }
-
             activeQuestions = window.questionsDatabase[key] || [];
             if (activeQuestions.length === 0) {
-                alert("এই সেটে এখনো কোনো প্রশ্ন যোগ করা হয়নি!");
+                alert("এই সেটে এখনো কোনো প্রশ্ন যোগ করা হয়নি!");
                 return;
             }
 
@@ -528,13 +571,12 @@
             questionStates = new Array(activeQuestions.length).fill('unvisited');
             currentQIndex = 0;
             
-            // ⭐ সময় বিভাজন (Time Logic)
             if (key === 'live' || key.startsWith('railway_') || key.startsWith('psc_')) {
-                timeLeft = 5400; // ১ ঘন্টা ৩০ মিনিট (৯০ মিনিট = ৫৪০০ সেকেন্ড)
+                timeLeft = 5400; // 1 hr 30 min
             } else if (key.startsWith('police_')) {
-                timeLeft = 3600; // ১ ঘন্টা (৬০ মিনিট = ৩৬০০ সেকেন্ড)
+                timeLeft = 3600; // 1 hr
             } else {
-                timeLeft = 1200; // Subject Tests - ২০ মিনিট (১২০০ সেকেন্ড)
+                timeLeft = 1200; // Subject Tests - 20 min
             }
 
             document.getElementById('modalTitle').innerText = key.toUpperCase().replace(/_/g, ' ') + " - Mock Test";
@@ -548,6 +590,8 @@
 
         function startTimer() {
             clearInterval(timerInterval);
+            const timerEl = document.getElementById('timerDisplay');
+            
             timerInterval = setInterval(() => {
                 timeLeft--;
                 let hours = Math.floor(timeLeft / 3600);
@@ -561,69 +605,69 @@
                     formattedTime = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
                 }
                 
-                document.getElementById('modalTitle').innerText = `Mock Test - ⏱️ সময় বাকি: ${formattedTime}`;
+                if (timerEl) timerEl.innerText = formattedTime;
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    alert("পরীক্ষার নির্ধারিত সময় শেষ হয়ে গেছে! আপনার উত্তর জমা নেওয়া হলো।");
+                    alert("সময় শেষ! আপনার পরীক্ষা সংক্রিয়ভাবে জমা করা হচ্ছে।");
                     finishQuiz();
                 }
             }, 1000);
         }
 
         function showQuestion() {
-            selectedOpt = userAnswers[currentQIndex];
+            let q = activeQuestions[currentQIndex];
+            document.getElementById('qText').innerText = `Q${currentQIndex + 1}. ${q.question}`;
+            document.getElementById('qCount').innerText = `প্রশ্ন: ${currentQIndex + 1} / ${activeQuestions.length}`;
             
-            const q = activeQuestions[currentQIndex];
-            document.getElementById('qText').innerText = `${currentQIndex + 1}. ${q.question}`;
-            document.getElementById('qCount').innerText = `প্রশ্ন ${currentQIndex + 1} / ${activeQuestions.length}`;
-            
-            const prevBtn = document.getElementById('prevBtn');
-            if (prevBtn) prevBtn.disabled = currentQIndex === 0;
-
-            const optList = document.getElementById('optList');
+            let optList = document.getElementById('optList');
             optList.innerHTML = '';
             
-            q.options.forEach((opt, index) => {
-                const li = document.createElement('li');
+            q.options.forEach((opt, idx) => {
+                let li = document.createElement('li');
                 li.className = 'option-item';
-                if (selectedOpt === index) li.classList.add('selected');
-                li.innerText = opt;
-                li.onclick = function() {
-                    document.querySelectorAll('.option-item').forEach(el => el.classList.remove('selected'));
+                if (userAnswers[currentQIndex] === idx) {
                     li.classList.add('selected');
-                    selectedOpt = index;
-                    userAnswers[currentQIndex] = index;
-                    questionStates[currentQIndex] = 'answered';
-                    renderPalette();
-                };
+                }
+                li.innerText = opt;
+                li.onclick = () => selectOption(idx);
                 optList.appendChild(li);
             });
 
+            document.getElementById('prevBtn').disabled = currentQIndex === 0;
             renderPalette();
         }
 
-        function renderPalette() {
-            const grid = document.getElementById('paletteGrid');
-            grid.innerHTML = '';
-            
-            activeQuestions.forEach((_, idx) => {
-                const btn = document.createElement('button');
-                btn.className = `q-btn ${questionStates[idx]}`;
-                if (idx === currentQIndex) btn.classList.add('active');
-                btn.innerText = idx + 1;
-                btn.onclick = () => {
-                    currentQIndex = idx;
-                    showQuestion();
-                };
-                grid.appendChild(btn);
-            });
+        function selectOption(idx) {
+            userAnswers[currentQIndex] = idx;
+            questionStates[currentQIndex] = 'answered';
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            if (questionStates[currentQIndex] === 'unvisited') {
+                questionStates[currentQIndex] = 'skipped';
+            }
+            if (currentQIndex < activeQuestions.length - 1) {
+                currentQIndex++;
+                showQuestion();
+            }
         }
 
         function prevQuestion() {
             if (currentQIndex > 0) {
                 currentQIndex--;
                 showQuestion();
+            }
+        }
+
+        function skipQuestion() {
+            questionStates[currentQIndex] = 'skipped';
+            if (currentQIndex < activeQuestions.length - 1) {
+                currentQIndex++;
+                showQuestion();
+            } else {
+                renderPalette();
             }
         }
 
@@ -637,154 +681,69 @@
             }
         }
 
-        function skipQuestion() {
-            if (questionStates[currentQIndex] !== 'answered') {
-                questionStates[currentQIndex] = 'skipped';
-            }
-            if (currentQIndex < activeQuestions.length - 1) {
-                currentQIndex++;
-                showQuestion();
-            } else {
-                renderPalette();
-            }
+        function jumpToQuestion(idx) {
+            currentQIndex = idx;
+            showQuestion();
         }
 
-        function nextQuestion() {
-            if (selectedOpt === null && questionStates[currentQIndex] !== 'answered') {
-                questionStates[currentQIndex] = 'skipped';
-            } else if (selectedOpt !== null) {
-                questionStates[currentQIndex] = 'answered';
-            }
-
-            if (currentQIndex < activeQuestions.length - 1) {
-                currentQIndex++;
-                showQuestion();
-            } else {
-                renderPalette();
-            }
+        function renderPalette() {
+            let grid = document.getElementById('paletteGrid');
+            grid.innerHTML = '';
+            
+            activeQuestions.forEach((_, idx) => {
+                let btn = document.createElement('button');
+                btn.className = `q-btn ${questionStates[idx]}`;
+                if (idx === currentQIndex) btn.classList.add('active');
+                btn.innerText = idx + 1;
+                btn.onclick = () => jumpToQuestion(idx);
+                grid.appendChild(btn);
+            });
         }
 
         function finishQuiz() {
-            if (confirm("আপনি কি পরীক্ষা জমা দিতে চান?")) {
-                clearInterval(timerInterval);
-                document.getElementById('quizBody').style.display = 'none';
-                document.getElementById('resultBody').style.display = 'block';
-                document.getElementById('modalTitle').innerText = "Mock Test - Solution Analysis";
+            clearInterval(timerInterval);
+            let correct = 0;
+            let wrong = 0;
+            let skipped = 0;
 
-                let correctCount = 0;
-                let wrongCount = 0;
-                let skippedCount = 0;
+            let solContainer = document.getElementById('solutionsContainer');
+            solContainer.innerHTML = '';
 
-                const solContainer = document.getElementById('solutionsContainer');
-                solContainer.innerHTML = '';
+            activeQuestions.forEach((q, idx) => {
+                let userAns = userAnswers[idx];
+                let isCorrect = userAns === q.correct;
+                
+                if (userAns === null) {
+                    skipped++;
+                } else if (isCorrect) {
+                    correct++;
+                } else {
+                    wrong++;
+                }
 
-                activeQuestions.forEach((q, idx) => {
-                    let userAns = userAnswers[idx];
-                    let isCorrect = userAns === q.correct;
-                    let isSkipped = userAns === null;
+                let card = document.createElement('div');
+                card.className = 'solution-card';
+                
+                let userText = userAns !== null ? q.options[userAns] : 'উত্তর দেওয়া হয়নি';
+                let correctText = q.options[q.correct];
+                let userAnsClass = isCorrect ? 'ans-user-correct' : (userAns !== null ? 'ans-user-wrong' : '');
 
-                    if (isCorrect) correctCount++;
-                    else if (isSkipped) skippedCount++;
-                    else wrongCount++;
+                card.innerHTML = `
+                    <div class="sol-q">Q${idx + 1}. ${q.question}</div>
+                    <div>আপনার উত্তর: <span class="sol-ans ${userAnsClass}">${userText}</span></div>
+                    <div>সঠিক উত্তর: <span class="sol-ans ans-correct-spec">${correctText}</span></div>
+                `;
+                solContainer.appendChild(card);
+            });
 
-                    let solCard = document.createElement('div');
-                    solCard.className = 'solution-card';
-                    
-                    let userAnsText = isSkipped ? "উত্তর দেওয়া হয়নি" : q.options[userAns];
-                    let userAnsClass = isCorrect ? "ans-user-correct" : "ans-user-wrong";
+            document.getElementById('statCorrect').innerText = correct;
+            document.getElementById('statWrong').innerText = wrong;
+            document.getElementById('statSkipped').innerText = skipped;
+            document.getElementById('totalScoreText').innerText = `মোট স্কোর: ${correct} / ${activeQuestions.length}`;
 
-                    solCard.innerHTML = `
-                        <div class="sol-q">${idx + 1}. ${q.question}</div>
-                        <div style="font-size:13px; margin-top:5px;">
-                            আপনার উত্তর: <span class="sol-ans ${userAnsClass}">${userAnsText}</span> ${isCorrect ? '✅' : (isSkipped ? '⚠️' : '❌')}
-                        </div>
-                        ${!isCorrect ? `<div style="font-size:13px; margin-top:3px;">সঠিক উত্তর: <span class="sol-ans ans-correct-spec">${q.options[q.correct]}</span></div>` : ''}
-                    `;
-
-                    solContainer.appendChild(solCard);
-                });
-
-                document.getElementById('totalScoreText').innerText = `মোট প্রাপ্ত নম্বর: ${correctCount} / ${activeQuestions.length}`;
-                document.getElementById('statCorrect').innerText = correctCount;
-                document.getElementById('statWrong').innerText = wrongCount;
-                document.getElementById('statSkipped').innerText = skippedCount;
-            }
+            document.getElementById('quizBody').style.display = 'none';
+            document.getElementById('resultBody').style.display = 'block';
         }
-
-        window.onload = function() {
-            showDashboardHome();
-        };
-    </script> 
-
-    <!-- Firebase Integration -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyAjH-0WA1_Q0Dzxe2TPollfxgqkkOiTgcM",
-          authDomain: "log-in-86783.firebaseapp.com",
-          projectId: "log-in-86783",
-          storageBucket: "log-in-86783.firebasestorage.app",
-          messagingSenderId: "671506061958",
-          appId: "1:671506061958:web:aa73d1ca3464e0b91d4f07",
-          measurementId: "G-Z85S0QDYKJ"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const authBtn = document.getElementById('authBtn');
-
-        window.currentUser = null;
-
-        window.loadQuestionsFromCloud = async function() {
-          try {
-            const docRef = doc(db, "exam_data", "questions");
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-              window.questionsDatabase = docSnap.data();
-              localStorage.setItem('smartCoachingDB', JSON.stringify(window.questionsDatabase));
-              if (typeof updateCardCounts === 'function') updateCardCounts();
-            }
-          } catch (e) {
-            console.error("Error fetching questions: ", e);
-          }
-        };
-
-        window.saveQuestionsToCloud = async function() {
-          try {
-            await setDoc(doc(db, "exam_data", "questions"), window.questionsDatabase);
-            alert("প্রশ্ন সফলভাবে সব ইউজারের জন্য ক্লাউডে আপলোড হয়েছে!");
-          } catch (e) {
-            alert("ক্লাউডে সেভ করতে সমস্যা হয়েছে: " + e.message);
-          }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            window.currentUser = user;
-            if (authBtn) {
-              authBtn.innerText = "Log Out (" + user.email.split('@')[0] + ")";
-              authBtn.onclick = () => {
-                signOut(auth).then(() => {
-                  window.location.href = "login.html";
-                });
-              };
-            }
-          } else {
-            window.currentUser = null;
-            if (authBtn) {
-              authBtn.innerText = "Log In";
-              authBtn.onclick = () => {
-                window.location.href = "login.html";
-              };
-            }
-          }
-        });
-
-        window.loadQuestionsFromCloud();
     </script>
 </body>
 </html>
